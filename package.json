@@ -1,0 +1,46 @@
+{
+  "name": "wirtual",
+  "version": "0.0.1",
+  "description": "Building blocks of VR web.",
+  "main": "dist/wirtual.js",
+  "scripts": {
+    "build": "rm -rf dist/; webpack --progress --colors --mode=build; grunt attach-vendors; grunt serve;",
+    "dev": "webpack --progress --colors --watch --mode=dev",
+    "test": "mocha --compilers js:babel-core/register --colors -w ./test/*.spec.js"
+  },
+  "devDependencies": {
+    "babel": "6.3.13",
+    "babel-core": "6.1.18",
+    "babel-eslint": "5.0.0",
+    "babel-loader": "6.1.0",
+    "babel-plugin-add-module-exports": "0.1.2",
+    "babel-preset-es2015": "6.3.13",
+    "chai": "3.4.1",
+    "clean-webpack-plugin": "^0.1.13",
+    "eslint": "1.7.2",
+    "eslint-loader": "1.1.0",
+    "grunt": "^1.0.1",
+    "grunt-contrib-clean": "^1.0.0",
+    "grunt-contrib-concat": "^1.0.1",
+    "grunt-contrib-connect": "^1.0.2",
+    "grunt-contrib-watch": "^1.0.0",
+    "mocha": "2.3.4",
+    "webpack": "1.12.9",
+    "yargs": "3.32.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "keywords": [
+    "virtual",
+    "virtual reality",
+    "building blocks",
+    "3d websites"
+  ],
+  "author": "Oguz Gelal",
+  "license": "MIT",
+  "dependencies": {
+    "webvr-boilerplate": "^0.3.8"
+  }
+}
