@@ -65,7 +65,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _compiler2 = _interopRequireDefault(_compiler);
 
-	var _api = __webpack_require__(4);
+	var _api = __webpack_require__(3);
 
 	var _api2 = _interopRequireDefault(_api);
 
@@ -81,11 +81,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    _classCallCheck(this, Wirtual);
 
 	    // ----- Initiate the api -----
-	    // This instantiates the Api class, which exposes the api object 
-	    // to the 'window' variable. After this is done, all other components
-	    // can access the api through the window objects.
-	    new _api2.default(settings);
-
+	    // This instantiates the Api class and exposes it to the 'window' variable.  
+	    window.Wirtual = new _api2.default(settings);
 	    // ----- Initiate the compiler -----
 	    // This will start the compilation of the page 
 	    new _compiler2.default();
@@ -114,11 +111,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _utils2 = _interopRequireDefault(_utils);
 
-	var _compileError = __webpack_require__(3);
+	var _compileError = __webpack_require__(4);
 
 	var _compileError2 = _interopRequireDefault(_compileError);
 
-	var _api = __webpack_require__(4);
+	var _api = __webpack_require__(3);
 
 	var _api2 = _interopRequireDefault(_api);
 
@@ -132,47 +129,258 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        _utils2.default.log('Compiler initiated...');
 
-	        this._randomIDLength = 10;
-	        this._dataHandle = 'data-wid';
+	        this.heartbeatRate = 500;
+	        this.heartbeat = null;
+	        this.stopHeartbeat = false;
 
 	        // Start compilation
-	        this.compile();
+	        this.initialize();
 	    }
 
 	    _createClass(Compiler, [{
+	        key: 'initialize',
+	        value: function initialize() {
+	            var self = this;
+	            // Fetch the main container
+	            var container = document.getElementsByClassName('wr-container');
+	            // Make sure there is only one container
+	            if (container.length === 0) {
+	                _compileError2.default.containerNotFound();return;
+	            }
+	            if (container.length > 1) {
+	                _compileError2.default.multipleContainersFound();return;
+	            }
+	            // Stamp it with a random ID
+	            var randomID = this.stamp(container[0], { parent: null });
+	            // Set the container as a root element
+	            _api2.default.get()._setRootElementID(randomID);
+	            // Stamp and store all the DOM nodes
+	            this.mark(randomID, 0, function () {
+	                // TODO: Initially compile starting from the root once.
+	                // Init watcher
+	                self.initHeartbeat();
+	            });
+	        }
+
+	        // Mark (stamp and store) every DOM element
+
+	    }, {
+	        key: 'mark',
+	        value: function mark(wid, recursionLevel, callback) {
+	            var elementCurrentDOM = this.getCurrentDOMState(wid);
+	            // Recurse throuh children
+	            var _iteratorNormalCompletion = true;
+	            var _didIteratorError = false;
+	            var _iteratorError = undefined;
+
+	            try {
+	                for (var _iterator = elementCurrentDOM.children[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	                    var child = _step.value;
+
+	                    var childID = '';
+	                    // Child is not stamped
+	                    if (!child.dataset.wid) {
+	                        // Stamp child
+	                        childID = this.stamp(child, { parent: wid });
+	                        // Add child to its parent 
+	                        _api2.default.get()._addElementChildren(wid, childID);
+	                    }
+	                    // Child is stamped
+	                    else {
+	                            childID = child.dataset.wid;
+	                        }
+	                    // Call recursion with the child
+	                    this.mark(childID, recursionLevel + 1);
+	                }
+	                // All elements marked
+	            } catch (err) {
+	                _didIteratorError = true;
+	                _iteratorError = err;
+	            } finally {
+	                try {
+	                    if (!_iteratorNormalCompletion && _iterator.return) {
+	                        _iterator.return();
+	                    }
+	                } finally {
+	                    if (_didIteratorError) {
+	                        throw _iteratorError;
+	                    }
+	                }
+	            }
+
+	            if (recursionLevel === 0) {
+	                if (callback) {
+	                    callback();
+	                }
+	            }
+	        }
+	    }, {
+	        key: 'initHeartbeat',
+	        value: function initHeartbeat() {
+	            var self = this;
+	            this.heartbeat = setInterval(function () {
+	                if (!self.stopHeartbeat) {
+	                    self.scan(null);
+	                }
+	            }, this.heartbeatRate);
+	        }
+
+	        // Scan for changes starting from given element
+	        // Manage the store, compile / recompile partially when necessary.
+
+	    }, {
+	        key: 'scan',
+	        value: function scan(wid) {
+	            var self = this;
+	            // If wid not set, start from the root
+	            if (!wid) {
+	                wid = _api2.default.get()._getRootElementID();
+	            }
+	            var elementStored = _api2.default.get()._getElement(wid);
+	            // If the children count changes, some might be unmarked
+	            // Call mark starting from the current element
+	            if (this.hasChildrenChange(wid)) {
+	                // Stop the heartbeat
+	                this.stopHeartbeat = true;
+	                // Mark everhthing under current element.
+	                this.mark(wid, 0, function () {
+	                    // Start heartbeat again
+	                    self.stopHeartbeat = false;
+	                });
+	            }
+	            if (!this.stopHeartbeat) {
+	                // Only step in if the component has a change
+	                // Keep stepping in until you find the element that has no change
+	                // Then, recompile its parent
+	                if (this.hasChange(wid)) {
+	                    // Element has no children and has a change
+	                    // This means the change is with itself, re-compile
+	                    if (!elementStored.children) {
+	                        this.compile(wid);
+	                    }
+	                    // Element has children
+	                    else {
+	                            var childrenHasChange = false;
+	                            var _iteratorNormalCompletion2 = true;
+	                            var _didIteratorError2 = false;
+	                            var _iteratorError2 = undefined;
+
+	                            try {
+	                                for (var _iterator2 = elementStored.children[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	                                    var childID = _step2.value;
+
+	                                    if (self.hasChange(childID)) {
+	                                        self.scan(childID);
+	                                        childrenHasChange = true;
+	                                    }
+	                                }
+	                                // There are changes which is not with children, compile
+	                            } catch (err) {
+	                                _didIteratorError2 = true;
+	                                _iteratorError2 = err;
+	                            } finally {
+	                                try {
+	                                    if (!_iteratorNormalCompletion2 && _iterator2.return) {
+	                                        _iterator2.return();
+	                                    }
+	                                } finally {
+	                                    if (_didIteratorError2) {
+	                                        throw _iteratorError2;
+	                                    }
+	                                }
+	                            }
+
+	                            if (!childrenHasChange) {
+	                                self.compile(wid);
+	                            }
+	                        }
+	                }
+	            }
+	        }
+
+	        // Compile / recompile given element and all its children
+
+	    }, {
 	        key: 'compile',
 	        value: function compile(wid) {
-	            if (!wid) {
-	                // Fetch the main container
-	                var container = document.getElementsByClassName('wr-container');
-	                // Make sure there is only one container
-	                if (container.length === 0) {
-	                    _compileError2.default.containerNotFound();return;
-	                }
-	                if (container.length > 1) {
-	                    _compileError2.default.multipleContainersFound();return;
-	                }
-	                // Stamp it with a random ID
-	                var randomID = '_w' + _utils2.default.random(this._randomIDLength - 2);
-	                container[0].setAttribute(this._dataHandle, randomID);
-	                var el = {
-	                    id: randomID,
-	                    dTarget: container[0],
-	                    vTarget: null,
-	                    hash: this.hash(container[0])
-	                };
-	                // Add the element to the DOM tree and recurse 
-	                _api2.default._addElement(randomID, el);
-	                this.compile(randomID);
-	            } else {
-	                var element = _api2.default._getElement(wid);
-	                _utils2.default.log(element);
-	            }
+	            _utils2.default.log('Compiling: ' + wid);
+	            var currentDOMState = this.getCurrentDOMState(wid);
+	            _api2.default.get()._setElementField(wid, 'hash', this.hash(currentDOMState));
+	        }
+
+	        // Did the structure of HTML changed
+
+	    }, {
+	        key: 'hasChange',
+	        value: function hasChange(wid) {
+	            // Fetch stored element data 
+	            var elementStored = this.getStoredDOMState(wid);
+	            // Get current state of the DOM element
+	            var elementCurrentDOM = this.getCurrentDOMState(wid);
+	            // DOM change if hashes are not the same
+	            /*
+	            console.log('Current');
+	            console.log(elementCurrentDOM);
+	            console.log('Stored');
+	            console.log(elementStored);
+	            console.log('Current - hash');
+	            console.log(this.hash(elementCurrentDOM));
+	            console.log('Stored - hash');
+	            console.log(elementStored.hash);
+	            */
+	            return elementStored.hash !== this.hash(elementCurrentDOM);
+	        }
+
+	        // Did more elements have been added or some removed
+
+	    }, {
+	        key: 'hasChildrenChange',
+	        value: function hasChildrenChange(wid) {
+	            // Fetch stored element data 
+	            var elementStored = this.getStoredDOMState(wid);
+	            var elementStoredChildren = elementStored.children.length || 0;
+	            // Get current state of the DOM element
+	            var elementCurrentDOM = this.getCurrentDOMState(wid);
+	            var elementCurrentDOMChildren = elementCurrentDOM.children.length || 0;
+	            // More or less child if not equal 
+	            return elementStoredChildren !== elementCurrentDOMChildren;
+	        }
+	    }, {
+	        key: 'getStoredDOMState',
+	        value: function getStoredDOMState(wid) {
+	            return _api2.default.get()._getElement(wid);
+	        }
+	    }, {
+	        key: 'getCurrentDOMState',
+	        value: function getCurrentDOMState(wid) {
+	            return document.querySelectorAll("[data-wid='" + wid + "']")[0];
+	        }
+	    }, {
+	        key: 'elementRemovedFromDOM',
+	        value: function elementRemovedFromDOM(wid) {}
+	    }, {
+	        key: 'isStamped',
+	        value: function isStamped(el) {}
+
+	        // Stamp DOM element with a random ID and store
+
+	    }, {
+	        key: 'stamp',
+	        value: function stamp(el, options) {
+	            var randomID = '_w' + _utils2.default.random(10);
+	            el.setAttribute('data-wid', randomID);
+	            var opts = options || {};
+	            opts.id = randomID;
+	            opts.dTarget = el;
+	            opts.vTarget = null;
+	            opts.hash = this.hash(el);
+	            _api2.default.get()._addElement(randomID, opts);
+	            return randomID;
 	        }
 	    }, {
 	        key: 'hash',
 	        value: function hash(el) {
-	            return el.innerHTML.replace(/\s/g, '').replace(/\n/g, '').replace(/\t/g, '').replace(/<!--[\s\S]*?-->/g, '').trim();
+	            return el.outerHTML.replace(/\s/g, '').replace(/\n/g, '').replace(/\t/g, '').replace(/<!--[\s\S]*?-->/g, '').trim();
 	        }
 	    }]);
 
@@ -184,7 +392,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 2 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
@@ -193,6 +401,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _api = __webpack_require__(3);
+
+	var _api2 = _interopRequireDefault(_api);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -206,7 +420,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        value: function log(item) {
 	            var prefixString = '--W';
 	            var prefixObject = '--- W ---';
-	            if (window.Wirtual && window.Wirtual.settings && window.Wirtual.settings.debug) {
+	            if (_api2.default.get().isDebug()) {
 	                var colorful = 'background: #222; color: #bada55';
 	                var colorless = 'background: transparent; color: rgb(1,16,31)';
 	                if (typeof item === 'string') {
@@ -222,6 +436,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	        value: function random(length) {
 	            return Math.random().toString(36).substr(2, length);
 	        }
+	    }, {
+	        key: 'toDegrees',
+	        value: function toDegrees(radians) {
+	            var pi = 3.1415;
+	            return radians * (180 / pi);
+	        }
+	    }, {
+	        key: 'toRadians',
+	        value: function toRadians(degrees) {
+	            var pi = 3.1415;
+	            return degrees * (pi / 180);
+	        }
 	    }]);
 
 	    return Utils;
@@ -232,6 +458,105 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 3 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _utils = __webpack_require__(2);
+
+	var _utils2 = _interopRequireDefault(_utils);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var Api = function () {
+	    function Api(settings) {
+	        _classCallCheck(this, Api);
+
+	        this.settings = settings;
+	        this.scene = null;
+	        this.domRoot = null;
+	        this.dom = {};
+	    }
+
+	    // Returns the active instance of the API
+
+
+	    _createClass(Api, [{
+	        key: 'isDebug',
+	        value: function isDebug() {
+	            return this.settings && this.settings.debug;
+	        }
+	    }, {
+	        key: '_addElement',
+	        value: function _addElement(wid, options) {
+	            this.dom[wid] = options;
+	        }
+	    }, {
+	        key: '_getElement',
+	        value: function _getElement(wid) {
+	            return this.dom[wid];
+	        }
+	    }, {
+	        key: '_addElementChildren',
+	        value: function _addElementChildren(wid, childID) {
+	            var children = this._getElementField(wid, 'children');
+	            if (!children) {
+	                children = [];
+	            }
+	            children.push(childID);
+	            this._setElementField(wid, 'children', children);
+	        }
+	    }, {
+	        key: '_getElementField',
+	        value: function _getElementField(wid, key) {
+	            if (this.dom[wid]) {
+	                return this.dom[wid][key];
+	            }
+	            return null;
+	        }
+	    }, {
+	        key: '_setElementField',
+	        value: function _setElementField(wid, key, value) {
+	            if (this.dom[wid]) {
+	                this.dom[wid][key] = value;
+	            }
+	        }
+	    }, {
+	        key: '_setRootElementID',
+	        value: function _setRootElementID(wid) {
+	            this.domRoot = wid;
+	        }
+	    }, {
+	        key: '_getRootElementID',
+	        value: function _getRootElementID() {
+	            return this.domRoot;
+	        }
+	    }, {
+	        key: '_setScene',
+	        value: function _setScene(scene) {}
+	    }], [{
+	        key: 'get',
+	        value: function get() {
+	            return window.Wirtual;
+	        }
+	    }]);
+
+	    return Api;
+	}();
+
+	exports.default = Api;
+	module.exports = exports['default'];
+
+/***/ },
+/* 4 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -278,61 +603,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	}(Error);
 
 	exports.default = CompileError;
-	module.exports = exports['default'];
-
-/***/ },
-/* 4 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	var _utils = __webpack_require__(2);
-
-	var _utils2 = _interopRequireDefault(_utils);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	var Api = function () {
-	    function Api(settings) {
-	        _classCallCheck(this, Api);
-
-	        window.Wirtual = { settings: settings };
-	        window.Wirtual.dom = {};
-	        window.Wirtual.sayhi = this.sayhi;
-
-	        _utils2.default.log('API initiated...');
-	        _utils2.default.log(window.Wirtual);
-	    }
-
-	    _createClass(Api, [{
-	        key: 'sayhi',
-	        value: function sayhi() {
-	            alert('Hi!');
-	        }
-	    }], [{
-	        key: '_addElement',
-	        value: function _addElement(id, options) {
-	            window.Wirtual.dom[id] = options;
-	        }
-	    }, {
-	        key: '_getElement',
-	        value: function _getElement(id) {
-	            return window.Wirtual.dom[id];
-	        }
-	    }]);
-
-	    return Api;
-	}();
-
-	exports.default = Api;
 	module.exports = exports['default'];
 
 /***/ }
