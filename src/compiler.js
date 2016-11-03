@@ -2,6 +2,8 @@ import Utils from './utils';
 import CompileError from './errors/compileError';
 import Api from './api';
 
+import Scene from './components/scene';
+
 export default class Compiler {
 
     constructor() {
@@ -28,15 +30,17 @@ export default class Compiler {
         Api.get()._setRootElementID(randomID);
         // Stamp and store all the DOM nodes
         this.mark(randomID, 0, function () {
-            // TODO: Initially compile starting from the root once.
-            // Init watcher
-            self.initHeartbeat();
+            // Initial compilation
+            self.initCompile(null, function () {
+                // Init watcher
+                self.initHeartbeat();
+            });
         });
     }
 
     // Mark (stamp and store) every DOM element
     mark(wid, recursionLevel, callback) {
-        let elementCurrentDOM = this.getCurrentDOMState(wid);
+        let elementCurrentDOM = this.getCurrentState(wid);
         // Recurse throuh children
         for (let child of elementCurrentDOM.children) {
             let childID = '';
@@ -71,9 +75,9 @@ export default class Compiler {
         let self = this;
         // If wid not set, start from the root
         if (!wid) { wid = Api.get()._getRootElementID(); }
-        let elementStored = Api.get()._getElement(wid);
-        // If the children count changes, some might be unmarked
-        // Call mark starting from the current element
+        let elementStored = this.getStoredState(wid);
+        // If the children count changes, something might be unmarked
+        // Stop the heartbeat and call mark starting from the current element
         if (this.hasChildrenChange(wid)) {
             // Stop the heartbeat
             this.stopHeartbeat = true;
@@ -81,6 +85,8 @@ export default class Compiler {
             this.mark(wid, 0, function () {
                 // Start heartbeat again
                 self.stopHeartbeat = false;
+                // Continue scanning from the same element
+                scan(wid);
             });
         }
         if (!this.stopHeartbeat) {
@@ -88,40 +94,90 @@ export default class Compiler {
             // Keep stepping in until you find the element that has no change
             // Then, recompile its parent
             if (this.hasChange(wid)) {
-                // Element has no children and has a change
-                // This means the change is with itself, re-compile
-                if (!elementStored.children) { this.compile(wid); }
-                // Element has children
-                else {
-                    // TODO: It compiles the changed element, but also compiled all its parents. Why ?
-                    var childrenHasChange = false;
+                var changedChildrenCount = 0, changedChildren = -1;
+                if (elementStored.children) {
                     for (let childID of elementStored.children) {
                         if (self.hasChange(childID)) {
-                            self.scan(childID);
-                            childrenHasChange = true;
+                            changedChildrenCount += 1;
+                            changedChildren = childID;
                         }
                     }
-                    // There are changes which is not with children, compile
-                    if (!childrenHasChange) { self.compile(wid); }
                 }
+                // Only one child has change, step in.
+                if (changedChildrenCount === 1 && changedChildren !== -1) { self.scan(changedChildren); }
+                // Children has no change -> Change is within element 
+                // Has no children -> Change is within element
+                // Multiple children has changes -> Just recompile the parent element
+                else { self.initCompile(wid); }
             }
         }
     }
 
-    // Compile / recompile given element and all its children
-    compile(wid) {
-        Utils.log('Compiling: ' + wid);
-        var currentDOMState = this.getCurrentDOMState(wid);
-        Api.get()._setElementField(wid, 'hash', this.hash(currentDOMState))
+    // Initiate the compilation process
+    initCompile(wid, callback) {
+        let self = this;
+        // If wid null, compile from the root element
+        if (!wid) { wid = Api.get()._getRootElementID(); }
+        // Stop the heartbeat while compiling - or it will cause race conditions 
+        // which will end up with unnecessary loops, compilations
+        self.stopHeartbeat = true;
+
+        // Evaluate & compile
+        self.compile(wid, 0, function () {
+
+            // When children changes, all its parents hash will also change.
+            // Re-hash all the parents of the changed item
+            self.rehash(wid);
+
+            // Start the heartbeat again
+            self.stopHeartbeat = false;
+
+            if (callback) { callback(); }
+        });
     }
+
+    // Compile / recompile given element and all its children
+    compile(wid, recursionLevel, callback) {
+        Utils.log('Compiling: ' + wid);
+        try {
+            var currentElementDOM = this.getStoredState(wid).dTarget;
+            // TODO: Set (Store in register) parent data on components
+            // TODO: Fetch parent data and pass it along with the compile methods
+            // TODO: Use the parent data in compile methods 
+
+            // Create the scene based on the 
+            if (currentElementDOM.className.match('wr-container').length > 0) {
+                Scene.compile(currentElementDOM);
+            }
+
+        }
+        catch (e) { CompileError.domElementFailedToCompile(wid); }
+        // All elements marked
+        if (recursionLevel === 0) {
+            if (callback) { callback(); }
+        }
+    }
+
+    // Rehash the element and all its parents (going up the tree)
+    rehash(wid) {
+        let self = this;
+        var currentStoredState = self.getStoredState(wid);
+        while (currentStoredState) {
+            var currentWid = currentStoredState.id;
+            Utils.log('Rehashing: ' + currentWid);
+            var currentDOMState = this.getCurrentState(currentWid);
+            Api.get()._setElementField(currentWid, 'hash', self.hash(currentDOMState));
+            currentStoredState = self.getStoredState(currentStoredState.parent);
+        }
+    }
+
 
     // Did the structure of HTML changed
     hasChange(wid) {
         // Fetch stored element data 
-        let elementStored = this.getStoredDOMState(wid);
+        let elementStored = this.getStoredState(wid);
         // Get current state of the DOM element
-        let elementCurrentDOM = this.getCurrentDOMState(wid);
-        // DOM change if hashes are not the same
+        let elementCurrentDOM = this.getCurrentState(wid);
         /*
         console.log('Current');
         console.log(elementCurrentDOM);
@@ -131,30 +187,32 @@ export default class Compiler {
         console.log(this.hash(elementCurrentDOM));
         console.log('Stored - hash');
         console.log(elementStored.hash);
-*/
+        */
+        // DOM change if hashes are not the same
         return elementStored.hash !== this.hash(elementCurrentDOM);
     }
 
     // Did more elements have been added or some removed
     hasChildrenChange(wid) {
         // Fetch stored element data 
-        let elementStored = this.getStoredDOMState(wid);
-        let elementStoredChildren = elementStored.children.length || 0;
+        let elementStored = this.getStoredState(wid);
         // Get current state of the DOM element
-        let elementCurrentDOM = this.getCurrentDOMState(wid);
-        let elementCurrentDOMChildren = elementCurrentDOM.children.length || 0;
+        let elementCurrentDOM = this.getCurrentState(wid);
+        // Get stored elements children count
+        let elementStoredChildren = 0;
+        if (elementStored && elementStored.children) { elementStoredChildren = elementStored.children.length; }
+        // Get DOM elements children count
+        let elementCurrentDOMChildren = 0;
+        if (elementCurrentDOM && elementCurrentDOM.children) { elementCurrentDOMChildren = elementCurrentDOM.children.length; }
         // More or less child if not equal 
         return elementStoredChildren !== elementCurrentDOMChildren;
     }
 
-    getStoredDOMState(wid) { return Api.get()._getElement(wid); }
-    getCurrentDOMState(wid) { return document.querySelectorAll("[data-wid='" + wid + "']")[0]; }
+    getStoredState(wid) { return Api.get()._getElement(wid); }
+    getCurrentState(wid) { return document.querySelectorAll("[data-wid='" + wid + "']")[0]; }
 
-    elementRemovedFromDOM(wid) {
-    }
-
-    isStamped(el) {
-    }
+    elementRemovedFromDOM(wid) { }
+    isStamped(el) { }
 
     // Stamp DOM element with a random ID and store
     stamp(el, options) {
@@ -164,7 +222,6 @@ export default class Compiler {
         opts.id = randomID;
         opts.dTarget = el;
         opts.vTarget = null;
-        // TODO: I think the data-wid property not included in hash. Check it!
         opts.hash = this.hash(el);
         Api.get()._addElement(randomID, opts);
         return randomID;
@@ -172,10 +229,15 @@ export default class Compiler {
 
     hash(el) {
         return el.outerHTML
+            // Remove all white spaces
             .replace(/\s/g, '')
             .replace(/\n/g, '')
             .replace(/\t/g, '')
+            // Remove all the comments
             .replace(/<!--[\s\S]*?-->/g, '')
+            // Remove 'data-wid' properties
+            // ie. Parents are marked and stored before its children - causes hash missmatch
+            .replace(/data\-wid=(\"|\')(.*?)(\"|\')/gi, '')
             .trim();
     }
 }

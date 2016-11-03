@@ -1,12 +1,16 @@
-import Api from './api';
+import Api from '../api';
 
 export default class Scene {
-    
+
     constructor(settings) {
-        this.initScreen();
+        this.initScene();
     }
 
-    initScreen(){
+    static compile(wid) {
+
+    }
+
+    initScene() {
         window.scene = new THREE.Scene();
     }
 

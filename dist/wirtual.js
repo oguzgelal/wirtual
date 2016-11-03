@@ -119,6 +119,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _api2 = _interopRequireDefault(_api);
 
+	var _scene = __webpack_require__(5);
+
+	var _scene2 = _interopRequireDefault(_scene);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -156,9 +160,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	            _api2.default.get()._setRootElementID(randomID);
 	            // Stamp and store all the DOM nodes
 	            this.mark(randomID, 0, function () {
-	                // TODO: Initially compile starting from the root once.
-	                // Init watcher
-	                self.initHeartbeat();
+	                // Initial compilation
+	                self.initCompile(null, function () {
+	                    // Init watcher
+	                    self.initHeartbeat();
+	                });
 	            });
 	        }
 
@@ -167,7 +173,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'mark',
 	        value: function mark(wid, recursionLevel, callback) {
-	            var elementCurrentDOM = this.getCurrentDOMState(wid);
+	            var elementCurrentDOM = this.getCurrentState(wid);
 	            // Recurse throuh children
 	            var _iteratorNormalCompletion = true;
 	            var _didIteratorError = false;
@@ -230,15 +236,25 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    }, {
 	        key: 'scan',
-	        value: function scan(wid) {
+	        value: function (_scan) {
+	            function scan(_x) {
+	                return _scan.apply(this, arguments);
+	            }
+
+	            scan.toString = function () {
+	                return _scan.toString();
+	            };
+
+	            return scan;
+	        }(function (wid) {
 	            var self = this;
 	            // If wid not set, start from the root
 	            if (!wid) {
 	                wid = _api2.default.get()._getRootElementID();
 	            }
-	            var elementStored = _api2.default.get()._getElement(wid);
-	            // If the children count changes, some might be unmarked
-	            // Call mark starting from the current element
+	            var elementStored = this.getStoredState(wid);
+	            // If the children count changes, something might be unmarked
+	            // Stop the heartbeat and call mark starting from the current element
 	            if (this.hasChildrenChange(wid)) {
 	                // Stop the heartbeat
 	                this.stopHeartbeat = true;
@@ -246,6 +262,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	                this.mark(wid, 0, function () {
 	                    // Start heartbeat again
 	                    self.stopHeartbeat = false;
+	                    // Continue scanning from the same element
+	                    scan(wid);
 	                });
 	            }
 	            if (!this.stopHeartbeat) {
@@ -253,59 +271,123 @@ return /******/ (function(modules) { // webpackBootstrap
 	                // Keep stepping in until you find the element that has no change
 	                // Then, recompile its parent
 	                if (this.hasChange(wid)) {
-	                    // Element has no children and has a change
-	                    // This means the change is with itself, re-compile
-	                    if (!elementStored.children) {
-	                        this.compile(wid);
-	                    }
-	                    // Element has children
-	                    else {
-	                            var childrenHasChange = false;
-	                            var _iteratorNormalCompletion2 = true;
-	                            var _didIteratorError2 = false;
-	                            var _iteratorError2 = undefined;
+	                    var changedChildrenCount = 0,
+	                        changedChildren = -1;
+	                    if (elementStored.children) {
+	                        var _iteratorNormalCompletion2 = true;
+	                        var _didIteratorError2 = false;
+	                        var _iteratorError2 = undefined;
 
+	                        try {
+	                            for (var _iterator2 = elementStored.children[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	                                var childID = _step2.value;
+
+	                                if (self.hasChange(childID)) {
+	                                    changedChildrenCount += 1;
+	                                    changedChildren = childID;
+	                                }
+	                            }
+	                        } catch (err) {
+	                            _didIteratorError2 = true;
+	                            _iteratorError2 = err;
+	                        } finally {
 	                            try {
-	                                for (var _iterator2 = elementStored.children[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	                                    var childID = _step2.value;
-
-	                                    if (self.hasChange(childID)) {
-	                                        self.scan(childID);
-	                                        childrenHasChange = true;
-	                                    }
+	                                if (!_iteratorNormalCompletion2 && _iterator2.return) {
+	                                    _iterator2.return();
 	                                }
-	                                // There are changes which is not with children, compile
-	                            } catch (err) {
-	                                _didIteratorError2 = true;
-	                                _iteratorError2 = err;
 	                            } finally {
-	                                try {
-	                                    if (!_iteratorNormalCompletion2 && _iterator2.return) {
-	                                        _iterator2.return();
-	                                    }
-	                                } finally {
-	                                    if (_didIteratorError2) {
-	                                        throw _iteratorError2;
-	                                    }
+	                                if (_didIteratorError2) {
+	                                    throw _iteratorError2;
 	                                }
 	                            }
-
-	                            if (!childrenHasChange) {
-	                                self.compile(wid);
-	                            }
+	                        }
+	                    }
+	                    // Only one child has change, step in.
+	                    if (changedChildrenCount === 1 && changedChildren !== -1) {
+	                        self.scan(changedChildren);
+	                    }
+	                    // Children has no change -> Change is within element 
+	                    // Has no children -> Change is within element
+	                    // Multiple children has changes -> Just recompile the parent element
+	                    else {
+	                            self.initCompile(wid);
 	                        }
 	                }
 	            }
+	        })
+
+	        // Initiate the compilation process
+
+	    }, {
+	        key: 'initCompile',
+	        value: function initCompile(wid, callback) {
+	            var self = this;
+	            // If wid null, compile from the root element
+	            if (!wid) {
+	                wid = _api2.default.get()._getRootElementID();
+	            }
+	            // Stop the heartbeat while compiling - or it will cause race conditions 
+	            // which will end up with unnecessary loops, compilations
+	            self.stopHeartbeat = true;
+
+	            // Evaluate & compile
+	            self.compile(wid, 0, function () {
+
+	                // When children changes, all its parents hash will also change.
+	                // Re-hash all the parents of the changed item
+	                self.rehash(wid);
+
+	                // Start the heartbeat again
+	                self.stopHeartbeat = false;
+
+	                if (callback) {
+	                    callback();
+	                }
+	            });
 	        }
 
 	        // Compile / recompile given element and all its children
 
 	    }, {
 	        key: 'compile',
-	        value: function compile(wid) {
+	        value: function compile(wid, recursionLevel, callback) {
 	            _utils2.default.log('Compiling: ' + wid);
-	            var currentDOMState = this.getCurrentDOMState(wid);
-	            _api2.default.get()._setElementField(wid, 'hash', this.hash(currentDOMState));
+
+	            var currentElement = this.getStoredState(wid);
+	            var currentElementDOM = currentElement.dTarget;
+	            window.testCurrentElement = currentElementDOM;
+
+	            try {
+	                if (currentElementDOM.className.match('wr-container').length > 0) {
+	                    alert('container found');
+	                    console.log(currentElementDOM);
+	                }
+	            } catch (e) {
+	                _compileError2.default.domElementFailedToCompile(wid);
+	            }
+
+	            // All elements marked
+	            if (recursionLevel === 0) {
+	                if (callback) {
+	                    callback();
+	                }
+	            }
+	        }
+
+	        // Rehash the element and all its parents (going up the tree)
+
+	    }, {
+	        key: 'rehash',
+	        value: function rehash(wid) {
+	            var self = this;
+	            var currentStoredState = self.getStoredState(wid);
+	            while (currentStoredState) {
+	                var currentWid = currentStoredState.id;
+	                _utils2.default.log('Rehashing: ' + currentWid);
+	                var currentDOMState = this.getCurrentState(currentWid);
+	                _api2.default.get()._setElementField(currentWid, 'hash', self.hash(currentDOMState));
+	                currentStoredState = self.getStoredState(currentStoredState.parent);
+	            }
 	        }
 
 	        // Did the structure of HTML changed
@@ -314,10 +396,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        key: 'hasChange',
 	        value: function hasChange(wid) {
 	            // Fetch stored element data 
-	            var elementStored = this.getStoredDOMState(wid);
+	            var elementStored = this.getStoredState(wid);
 	            // Get current state of the DOM element
-	            var elementCurrentDOM = this.getCurrentDOMState(wid);
-	            // DOM change if hashes are not the same
+	            var elementCurrentDOM = this.getCurrentState(wid);
 	            /*
 	            console.log('Current');
 	            console.log(elementCurrentDOM);
@@ -328,6 +409,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            console.log('Stored - hash');
 	            console.log(elementStored.hash);
 	            */
+	            // DOM change if hashes are not the same
 	            return elementStored.hash !== this.hash(elementCurrentDOM);
 	        }
 
@@ -337,22 +419,30 @@ return /******/ (function(modules) { // webpackBootstrap
 	        key: 'hasChildrenChange',
 	        value: function hasChildrenChange(wid) {
 	            // Fetch stored element data 
-	            var elementStored = this.getStoredDOMState(wid);
-	            var elementStoredChildren = elementStored.children.length || 0;
+	            var elementStored = this.getStoredState(wid);
 	            // Get current state of the DOM element
-	            var elementCurrentDOM = this.getCurrentDOMState(wid);
-	            var elementCurrentDOMChildren = elementCurrentDOM.children.length || 0;
+	            var elementCurrentDOM = this.getCurrentState(wid);
+	            // Get stored elements children count
+	            var elementStoredChildren = 0;
+	            if (elementStored && elementStored.children) {
+	                elementStoredChildren = elementStored.children.length;
+	            }
+	            // Get DOM elements children count
+	            var elementCurrentDOMChildren = 0;
+	            if (elementCurrentDOM && elementCurrentDOM.children) {
+	                elementCurrentDOMChildren = elementCurrentDOM.children.length;
+	            }
 	            // More or less child if not equal 
 	            return elementStoredChildren !== elementCurrentDOMChildren;
 	        }
 	    }, {
-	        key: 'getStoredDOMState',
-	        value: function getStoredDOMState(wid) {
+	        key: 'getStoredState',
+	        value: function getStoredState(wid) {
 	            return _api2.default.get()._getElement(wid);
 	        }
 	    }, {
-	        key: 'getCurrentDOMState',
-	        value: function getCurrentDOMState(wid) {
+	        key: 'getCurrentState',
+	        value: function getCurrentState(wid) {
 	            return document.querySelectorAll("[data-wid='" + wid + "']")[0];
 	        }
 	    }, {
@@ -380,7 +470,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'hash',
 	        value: function hash(el) {
-	            return el.outerHTML.replace(/\s/g, '').replace(/\n/g, '').replace(/\t/g, '').replace(/<!--[\s\S]*?-->/g, '').trim();
+	            return el.outerHTML
+	            // Remove all white spaces
+	            .replace(/\s/g, '').replace(/\n/g, '').replace(/\t/g, '')
+	            // Remove all the comments
+	            .replace(/<!--[\s\S]*?-->/g, '')
+	            // Remove 'data-wid' properties
+	            // ie. Parents are marked and stored before its children - causes hash missmatch
+	            .replace(/data\-wid=(\"|\')(.*?)(\"|\')/gi, '').trim();
 	        }
 	    }]);
 
@@ -597,12 +694,60 @@ return /******/ (function(modules) { // webpackBootstrap
 	        value: function multipleContainersFound() {
 	            throw new CompileError('More than one container element found. Only one element with \'wr-container\' class allowed');
 	        }
+	    }, {
+	        key: 'domElementFailedToCompile',
+	        value: function domElementFailedToCompile(id) {
+	            throw new CompileError('Element with ID ' + id + ' failed to compile.');
+	        }
 	    }]);
 
 	    return CompileError;
 	}(Error);
 
 	exports.default = CompileError;
+	module.exports = exports['default'];
+
+/***/ },
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _api = __webpack_require__(3);
+
+	var _api2 = _interopRequireDefault(_api);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var Scene = function () {
+	    function Scene(settings) {
+	        _classCallCheck(this, Scene);
+
+	        this.initScene();
+	    }
+
+	    _createClass(Scene, [{
+	        key: 'initScene',
+	        value: function initScene() {
+	            window.scene = new THREE.Scene();
+	        }
+	    }], [{
+	        key: 'compile',
+	        value: function compile(wid) {}
+	    }]);
+
+	    return Scene;
+	}();
+
+	exports.default = Scene;
 	module.exports = exports['default'];
 
 /***/ }
