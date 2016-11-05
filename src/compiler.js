@@ -138,21 +138,30 @@ export default class Compiler {
 
     // Compile / recompile given element and all its children
     compile(wid, recursionLevel, callback) {
-        Utils.log('Compiling: ' + wid);
-        try {
-            var currentElementDOM = this.getStoredState(wid).dTarget;
+        let self = this;
+        
+        //try {
+            Utils.log('Compiling: ' + wid);
+            var currentElement = this.getStoredState(wid);
+            var currentElementClassName = currentElement.dTarget.className;
             // TODO: Set (Store in register) parent data on components
             // TODO: Fetch parent data and pass it along with the compile methods
             // TODO: Use the parent data in compile methods 
 
-            // Create the scene based on the 
-            if (currentElementDOM.className.match('wr-container').length > 0) {
-                Scene.compile(currentElementDOM);
+            // Create the scene with the container
+            if (currentElementClassName.match('wr-container')) {
+                Scene.compile(currentElement);
             }
+        //} catch (e) { Utils.log(e); CompileError.domElementFailedToCompile(wid); }
 
+        // Call recursion for all the children
+        if (currentElement.children) {
+            for (let childID of currentElement.children) {
+                self.compile(childID, recursionLevel + 1, null);
+            }
         }
-        catch (e) { CompileError.domElementFailedToCompile(wid); }
-        // All elements marked
+        
+        // All elements compiled
         if (recursionLevel === 0) {
             if (callback) { callback(); }
         }
@@ -200,10 +209,14 @@ export default class Compiler {
         let elementCurrentDOM = this.getCurrentState(wid);
         // Get stored elements children count
         let elementStoredChildren = 0;
-        if (elementStored && elementStored.children) { elementStoredChildren = elementStored.children.length; }
+        if (elementStored && elementStored.children) {
+            elementStoredChildren = elementStored.children.length;
+        }
         // Get DOM elements children count
         let elementCurrentDOMChildren = 0;
-        if (elementCurrentDOM && elementCurrentDOM.children) { elementCurrentDOMChildren = elementCurrentDOM.children.length; }
+        if (elementCurrentDOM && elementCurrentDOM.children) {
+            elementCurrentDOMChildren = elementCurrentDOM.children.length;
+        }
         // More or less child if not equal 
         return elementStoredChildren !== elementCurrentDOMChildren;
     }

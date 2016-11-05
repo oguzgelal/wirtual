@@ -21,19 +21,20 @@
     scene.add(cameraDolly);
 
     // add light
+    
     particleLight = new THREE.Mesh(
       new THREE.SphereGeometry(1, 5, 5),
       new THREE.MeshBasicMaterial({ color: 0xffffff })
     );
-
     scene.add(particleLight);
+    var pointLight = new THREE.PointLight(0xffffff, 10, 800);
+    particleLight.add(pointLight);
+    
+
 
     var directionalLight = new THREE.DirectionalLight(0xffffff, .5);
     directionalLight.position.set(5, 25, 25).normalize();
     scene.add(directionalLight);
-
-    var pointLight = new THREE.PointLight(0xffffff, 10, 800);
-    particleLight.add(pointLight);
 
 
     var skyGeometry = new THREE.CubeGeometry(5000, 5000, 5000);

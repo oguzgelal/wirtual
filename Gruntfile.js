@@ -1,18 +1,3 @@
-// Wraps each script to be an IIFE (Immediately Invoked Function Expression)
-var concat_wrap = [];
-// Just concats below scripts
-var concat_nowrap = [
-  "node_modules/es6-promise/dist/es6-promise.js",
-  "node_modules/three/three.js",
-  "node_modules/three/examples/js/controls/VRControls.js",
-  "node_modules/three/examples/js/effects/VREffect.js",
-  "node_modules/webvr-polyfill/build/webvr-polyfill.js",
-  "node_modules/webvr-boilerplate/build/webvr-manager.js"
-];
-
-// Add webpack bundled source codes
-concat_wrap.push('dist/tmp/webpack-out.js');
-
 module.exports = function (grunt) {
 
   // Project configuration.
@@ -24,15 +9,17 @@ module.exports = function (grunt) {
           banner: '(function(){\n',
           footer: '\n})();'
         },
-        src: concat_wrap,
-        dest: 'dist/tmp/wirtual-wrap.js',
-      },
-      nowrap: {
-        src: concat_nowrap,
-        dest: 'dist/tmp/wirtual-nowrap.js',
-      },
-      finalise: {
-        src: ['dist/tmp/wirtual-wrap.js', 'dist/tmp/wirtual-nowrap.js'],
+        src: [
+          // Dependencies
+          "node_modules/es6-promise/dist/es6-promise.js",
+          "node_modules/three/three.js",
+          "node_modules/three/examples/js/controls/VRControls.js",
+          "node_modules/three/examples/js/effects/VREffect.js",
+          "node_modules/webvr-polyfill/build/webvr-polyfill.js",
+          "node_modules/webvr-boilerplate/build/webvr-manager.js",
+          // Source codes
+          "dist/tmp/webpack-out.js"
+        ],
         dest: 'dist/wirtual.js',
       }
     },
@@ -72,6 +59,6 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-clean');
 
   grunt.registerTask('serve', function () { grunt.task.run(['connect:livereload', 'watch']); });
-  grunt.registerTask('attach-vendors', ['concat:wrap', 'concat:nowrap', 'concat:finalise', 'clean:tmp']);
+  grunt.registerTask('attach-vendors', ['concat:wrap', 'clean:tmp']);
 
 };
