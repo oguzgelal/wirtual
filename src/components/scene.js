@@ -46,7 +46,7 @@ export default class Scene {
 
     // Create the scene
     createScene() {
-        this.scene = new THREE.Scene(); 
+        this.scene = new THREE.Scene();
     }
 
     // Create camera with default options
@@ -79,7 +79,6 @@ export default class Scene {
     }
 
     addSkyBox(){
-        Utils.log(this.el.dTarget.dataset);
         if (this.el.dTarget.dataset && this.el.dTarget.dataset.skybox && this.el.dTarget.dataset.skyboxFormat){
             /* 
             * Read the skybox data
@@ -117,7 +116,6 @@ export default class Scene {
             // Create the actual skybox element
             this.skybox = new THREE.Mesh(skyGeometry, skyMaterial);
             this.scene.add(this.skybox);
-            Utils.log(this);
         }
     }
 
@@ -128,7 +126,7 @@ export default class Scene {
     }
 
     appendDOM(){
-        // Remove all canvas elements (for re-rendering)
+        // Remove all canvas elements (for re-compiling)
         let canvasElements = document.getElementsByTagName('canvas');
         for (let i = 0; i < canvasElements.length; i++){
             canvasElements[i].parentElement.removeChild(canvasElements[i]);

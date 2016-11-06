@@ -11,5 +11,6 @@ export default class CompileError extends Error {
     static domElementFailedToCompile(id) { throw new CompileError('Element with ID ' + id + ' failed to compile.'); }
     static compilationError(compileError) { throw new CompileError('An error occured while compiling: '+compileError); }
     static dTargetNotFound(elementName) { throw new CompileError('Cannot compile '+elementName+': dTarget not found.'); }
+    static depthNotValid() { throw new CompileError('\'wr-depth-<int>\' attribute could not be parsed.'); }
 
 }

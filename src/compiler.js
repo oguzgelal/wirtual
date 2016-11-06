@@ -125,7 +125,7 @@ export default class Compiler {
         self.stopHeartbeat = true;
 
         // Evaluate & compile
-        self.compile(wid, 0, function () {
+        self.compile(wid, {}, 0, function () {
 
             // When children changes, all its parents hash will also change.
             // Re-hash all the parents of the changed item
@@ -139,31 +139,55 @@ export default class Compiler {
     }
 
     // Compile / recompile given element and all its children
-    compile(wid, recursionLevel, callback) {
+    compile(wid, payload, recursionLevel, callback) {
         let self = this;
+        Utils.log('Compiling: ' + wid);
+
+        var currentElement = this.getStoredState(wid);
+        if (!currentElement){ Utils.log('Element (WID: '+wid+') not found'); return; }
+        if (!currentElement.dTarget){ Utils.log('Element DOM target (WID: '+wid+') not found'); return; }
+        var currentElementClassName = currentElement.dTarget.className;
+
+        // If payload is null, initiate it with an empty object and sync it
+        if (!payload){ payload = {}; }
+        this.syncPayload(payload, wid);
         
-        //try {
-            Utils.log('Compiling: ' + wid);
-            var currentElement = this.getStoredState(wid);
-            var currentElementClassName = currentElement.dTarget.className;
+        /* ------ SCAN CLASSES ------ */
 
-            // Create the scene with the container
-            if (currentElementClassName.match('wr-container')) {
-                Scene.compile(currentElement);
-            }
+        // Create the scene with the container
+        if (currentElementClassName.match('wr-container')) { Scene.compile(currentElement); }
+        
+        // Parse depth and append it to the payload (for passing on to the child elements)
+        if (currentElementClassName.match(/wr-depth-\d*/g)){
+            let depth = currentElementClassName.match(/wr-depth-\d*/g)[0];
+            try { depth = parseInt(depth.replace('wr-depth-', '').trim()); }
+            catch(e){ CompileError.depthNotValid(); return; }
+            payload.depth = depth;
+        }
 
-        //} catch (e) { Utils.log(e); CompileError.domElementFailedToCompile(wid); }
+        /* -------------------------- */
 
         // Call recursion for all the children
         if (currentElement.children) {
             for (let childID of currentElement.children) {
-                self.compile(childID, recursionLevel + 1, null);
+                self.compile(childID, payload, recursionLevel + 1, null);
             }
         }
         
         // All elements compiled
         if (recursionLevel === 0) {
             if (callback) { callback(); }
+        }
+    }
+
+    syncPayload(payload, wid){
+        var currentElement = this.getStoredState(wid);
+        for (let key in payload){
+            // If payload doesn't exist, initiate with an empty object
+            if (!currentElement.payload){ currentElement.payload = {}; }
+            // Set values of the payload
+            // This will update the existing keys and set new ones
+            currentElement.payload[key] = payload[key];
         }
     }
 

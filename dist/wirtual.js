@@ -44348,7 +44348,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            self.stopHeartbeat = true;
 
 	            // Evaluate & compile
-	            self.compile(wid, 0, function () {
+	            self.compile(wid, {}, 0, function () {
 
 	                // When children changes, all its parents hash will also change.
 	                // Re-hash all the parents of the changed item
@@ -44367,20 +44367,44 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    }, {
 	        key: 'compile',
-	        value: function compile(wid, recursionLevel, callback) {
+	        value: function compile(wid, payload, recursionLevel, callback) {
 	            var self = this;
-
-	            //try {
 	            _utils2.default.log('Compiling: ' + wid);
+
 	            var currentElement = this.getStoredState(wid);
+	            if (!currentElement) {
+	                _utils2.default.log('Element (WID: ' + wid + ') not found');return;
+	            }
+	            if (!currentElement.dTarget) {
+	                _utils2.default.log('Element DOM target (WID: ' + wid + ') not found');return;
+	            }
 	            var currentElementClassName = currentElement.dTarget.className;
+
+	            // If payload is null, initiate it with an empty object and sync it
+	            if (!payload) {
+	                payload = {};
+	            }
+	            this.syncPayload(payload, wid);
+
+	            /* ------ SCAN CLASSES ------ */
 
 	            // Create the scene with the container
 	            if (currentElementClassName.match('wr-container')) {
 	                _scene2.default.compile(currentElement);
 	            }
 
-	            //} catch (e) { Utils.log(e); CompileError.domElementFailedToCompile(wid); }
+	            // Parse depth and append it to the payload (for passing on to the child elements)
+	            if (currentElementClassName.match(/wr-depth-\d*/g)) {
+	                var depth = currentElementClassName.match(/wr-depth-\d*/g)[0];
+	                try {
+	                    depth = parseInt(depth.replace('wr-depth-', '').trim());
+	                } catch (e) {
+	                    _compileError2.default.depthNotValid();return;
+	                }
+	                payload.depth = depth;
+	            }
+
+	            /* -------------------------- */
 
 	            // Call recursion for all the children
 	            if (currentElement.children) {
@@ -44392,7 +44416,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    for (var _iterator3 = currentElement.children[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
 	                        var childID = _step3.value;
 
-	                        self.compile(childID, recursionLevel + 1, null);
+	                        self.compile(childID, payload, recursionLevel + 1, null);
 	                    }
 	                } catch (err) {
 	                    _didIteratorError3 = true;
@@ -44415,6 +44439,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	                if (callback) {
 	                    callback();
 	                }
+	            }
+	        }
+	    }, {
+	        key: 'syncPayload',
+	        value: function syncPayload(payload, wid) {
+	            var currentElement = this.getStoredState(wid);
+	            for (var key in payload) {
+	                // If payload doesn't exist, initiate with an empty object
+	                if (!currentElement.payload) {
+	                    currentElement.payload = {};
+	                }
+	                // Set values of the payload
+	                // This will update the existing keys and set new ones
+	                currentElement.payload[key] = payload[key];
 	            }
 	        }
 
@@ -44708,6 +44746,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return this.domRoot;
 	        }
 	    }, {
+	        key: 'getRootElement',
+	        value: function getRootElement() {
+	            return this._getElement(this._getRootElementID());
+	        }
+	    }, {
 	        key: 'attachRenderLoopRunnable',
 	        value: function attachRenderLoopRunnable(runnableName, runnable) {
 	            this.renderLoopRunnables[runnableName] = runnable;
@@ -44791,6 +44834,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	        key: 'dTargetNotFound',
 	        value: function dTargetNotFound(elementName) {
 	            throw new CompileError('Cannot compile ' + elementName + ': dTarget not found.');
+	        }
+	    }, {
+	        key: 'depthNotValid',
+	        value: function depthNotValid() {
+	            throw new CompileError('\'wr-depth-<int>\' attribute could not be parsed.');
 	        }
 	    }]);
 
@@ -44919,7 +44967,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'addSkyBox',
 	        value: function addSkyBox() {
-	            _utils2.default.log(this.el.dTarget.dataset);
 	            if (this.el.dTarget.dataset && this.el.dTarget.dataset.skybox && this.el.dTarget.dataset.skyboxFormat) {
 	                /* 
 	                * Read the skybox data
@@ -44961,7 +45008,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	                // Create the actual skybox element
 	                this.skybox = new THREE.Mesh(skyGeometry, skyMaterial);
 	                this.scene.add(this.skybox);
-	                _utils2.default.log(this);
 	            }
 	        }
 	    }, {
@@ -44974,11 +45020,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'appendDOM',
 	        value: function appendDOM() {
-	            // Remove all canvas elements (for re-rendering)
+	            // Remove all canvas elements (for re-compiling)
 	            var canvasElements = document.getElementsByTagName('canvas');
 	            for (var i = 0; i < canvasElements.length; i++) {
-	                _utils2.default.log('*-*-*-*-*-*');
-	                _utils2.default.log(canvasElements[i]);
 	                canvasElements[i].parentElement.removeChild(canvasElements[i]);
 	            }
 	            // Append the canvas element to DOM

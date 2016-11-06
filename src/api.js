@@ -35,6 +35,10 @@ export default class Api {
     _setRootElementID(wid) { this.domRoot = wid; }
     _getRootElementID() { return this.domRoot; }
 
+    getRootElement(){
+        return this._getElement(this._getRootElementID());
+    }
+
     attachRenderLoopRunnable(runnableName, runnable){ this.renderLoopRunnables[runnableName] = runnable; }
     detachRenderLoopRunnable(runnableName){ this.renderLoopRunnables[runnableName] = null; }
     getRenderLoopRunnables(){ return this.renderLoopRunnables; }
