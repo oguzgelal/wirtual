@@ -34,6 +34,8 @@ export default class Compiler {
             self.initCompile(null, function () {
                 // Init watcher
                 self.initHeartbeat();
+                // Init the render loop
+                self.renderLoop();
             });
         });
     }
@@ -144,14 +146,12 @@ export default class Compiler {
             Utils.log('Compiling: ' + wid);
             var currentElement = this.getStoredState(wid);
             var currentElementClassName = currentElement.dTarget.className;
-            // TODO: Set (Store in register) parent data on components
-            // TODO: Fetch parent data and pass it along with the compile methods
-            // TODO: Use the parent data in compile methods 
 
             // Create the scene with the container
             if (currentElementClassName.match('wr-container')) {
                 Scene.compile(currentElement);
             }
+
         //} catch (e) { Utils.log(e); CompileError.domElementFailedToCompile(wid); }
 
         // Call recursion for all the children
@@ -252,5 +252,28 @@ export default class Compiler {
             // ie. Parents are marked and stored before its children - causes hash missmatch
             .replace(/data\-wid=(\"|\')(.*?)(\"|\')/gi, '')
             .trim();
+    }
+
+    renderLoop(){
+        let oldTimestamp = 0;
+        function animate(timestamp) {
+            // Calculate time since last frame in seconds
+            let timestampDelta = (oldTimestamp !== 0) ? (timestamp - oldTimestamp) / 1000.0 : 0.0;
+            oldTimestamp = timestamp;
+            // Update Animations
+            if (THREE.AnimationHandler) { THREE.AnimationHandler.update(timestampDelta); }
+
+            // Execute the runnables atached to the render loop
+            let renderLoopRunnables = Api.get().getRenderLoopRunnables();
+            for (let runnableIndex in renderLoopRunnables){
+                if (renderLoopRunnables[runnableIndex] && typeof renderLoopRunnables[runnableIndex] === 'function'){
+                    renderLoopRunnables[runnableIndex](timestamp);
+                }
+            }
+
+            // Recurse
+            requestAnimationFrame(animate);
+        }
+        requestAnimationFrame(animate);
     }
 }

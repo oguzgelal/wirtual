@@ -9,5 +9,7 @@ export default class CompileError extends Error {
     static containerNotFound() { throw new CompileError('Container element not found. Make sure to wrap your code around a DOM element with \'wr-container\' class'); }
     static multipleContainersFound() { throw new CompileError('More than one container element found. Only one element with \'wr-container\' class allowed'); }
     static domElementFailedToCompile(id) { throw new CompileError('Element with ID ' + id + ' failed to compile.'); }
+    static compilationError(compileError) { throw new CompileError('An error occured while compiling: '+compileError); }
+    static dTargetNotFound(elementName) { throw new CompileError('Cannot compile '+elementName+': dTarget not found.'); }
 
 }

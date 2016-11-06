@@ -44179,6 +44179,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	                self.initCompile(null, function () {
 	                    // Init watcher
 	                    self.initHeartbeat();
+	                    // Init the render loop
+	                    self.renderLoop();
 	                });
 	            });
 	        }
@@ -44372,14 +44374,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	            _utils2.default.log('Compiling: ' + wid);
 	            var currentElement = this.getStoredState(wid);
 	            var currentElementClassName = currentElement.dTarget.className;
-	            // TODO: Set (Store in register) parent data on components
-	            // TODO: Fetch parent data and pass it along with the compile methods
-	            // TODO: Use the parent data in compile methods 
 
 	            // Create the scene with the container
 	            if (currentElementClassName.match('wr-container')) {
 	                _scene2.default.compile(currentElement);
 	            }
+
 	            //} catch (e) { Utils.log(e); CompileError.domElementFailedToCompile(wid); }
 
 	            // Call recursion for all the children
@@ -44523,6 +44523,32 @@ return /******/ (function(modules) { // webpackBootstrap
 	            // ie. Parents are marked and stored before its children - causes hash missmatch
 	            .replace(/data\-wid=(\"|\')(.*?)(\"|\')/gi, '').trim();
 	        }
+	    }, {
+	        key: 'renderLoop',
+	        value: function renderLoop() {
+	            var oldTimestamp = 0;
+	            function animate(timestamp) {
+	                // Calculate time since last frame in seconds
+	                var timestampDelta = oldTimestamp !== 0 ? (timestamp - oldTimestamp) / 1000.0 : 0.0;
+	                oldTimestamp = timestamp;
+	                // Update Animations
+	                if (THREE.AnimationHandler) {
+	                    THREE.AnimationHandler.update(timestampDelta);
+	                }
+
+	                // Execute the runnables atached to the render loop
+	                var renderLoopRunnables = _api2.default.get().getRenderLoopRunnables();
+	                for (var runnableIndex in renderLoopRunnables) {
+	                    if (renderLoopRunnables[runnableIndex] && typeof renderLoopRunnables[runnableIndex] === 'function') {
+	                        renderLoopRunnables[runnableIndex](timestamp);
+	                    }
+	                }
+
+	                // Recurse
+	                requestAnimationFrame(animate);
+	            }
+	            requestAnimationFrame(animate);
+	        }
 	    }]);
 
 	    return Compiler;
@@ -44625,6 +44651,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.scene = null;
 	        this.domRoot = null;
 	        this.dom = {};
+	        this.renderLoopRunnables = {};
 	    }
 
 	    // Returns the active instance of the API
@@ -44681,8 +44708,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return this.domRoot;
 	        }
 	    }, {
-	        key: '_setScene',
-	        value: function _setScene(scene) {}
+	        key: 'attachRenderLoopRunnable',
+	        value: function attachRenderLoopRunnable(runnableName, runnable) {
+	            this.renderLoopRunnables[runnableName] = runnable;
+	        }
+	    }, {
+	        key: 'detachRenderLoopRunnable',
+	        value: function detachRenderLoopRunnable(runnableName) {
+	            this.renderLoopRunnables[runnableName] = null;
+	        }
+	    }, {
+	        key: 'getRenderLoopRunnables',
+	        value: function getRenderLoopRunnables() {
+	            return this.renderLoopRunnables;
+	        }
 	    }], [{
 	        key: 'get',
 	        value: function get() {
@@ -44743,6 +44782,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	        value: function domElementFailedToCompile(id) {
 	            throw new CompileError('Element with ID ' + id + ' failed to compile.');
 	        }
+	    }, {
+	        key: 'compilationError',
+	        value: function compilationError(compileError) {
+	            throw new CompileError('An error occured while compiling: ' + compileError);
+	        }
+	    }, {
+	        key: 'dTargetNotFound',
+	        value: function dTargetNotFound(elementName) {
+	            throw new CompileError('Cannot compile ' + elementName + ': dTarget not found.');
+	        }
 	    }]);
 
 	    return CompileError;
@@ -44767,6 +44816,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _api2 = _interopRequireDefault(_api);
 
+	var _compileError = __webpack_require__(4);
+
+	var _compileError2 = _interopRequireDefault(_compileError);
+
+	var _utils = __webpack_require__(2);
+
+	var _utils2 = _interopRequireDefault(_utils);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -44777,10 +44834,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        // Pointer to the parent
 	        this.el = el;
-	        // Scene
-	        this.scene = null;
-	        // Camera group
-	        this.cameraDolly = null;
+	        // Make sure DOM representation exists
+	        if (!this.el.dTarget) {
+	            _compileError2.default.dTargetNotFound('scene');return;
+	        }
 	        // Initialise
 	        this.init();
 	    }
@@ -44797,6 +44854,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.addCamera();
 	            // Add default environment light
 	            this.addEnvLight();
+	            // Add skybox if exists
+	            this.addSkyBox();
+	            // Add default renderers
+	            this.addRenderers();
+	            // Append the canvas element to the DOM
+	            this.appendDOM();
+	            // Initiate VR handlers
+	            this.initVR();
+	            // Set aspect ratio and scales according to device screen size
+	            this.setRatio();
+	            // Set window resize listener
+	            this.onWindowResize();
+	            // Attach Render Loop runnable
+	            this.attachRenderLoop();
 	        }
 
 	        // Create the scene
@@ -44825,9 +44896,135 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'addEnvLight',
 	        value: function addEnvLight() {
-	            // Create particleLight and att it to the screen
-	            this.particleLight = new THREE.Mesh(new THREE.SphereGeometry(1, 5, 5), new THREE.MeshBasicMaterial({ color: 0xffffff }));
-	            this.scene.add(this.particleLight);
+	            /*
+	            * Read light intensity
+	            * Format: data-brightness="..."
+	            * Value: 'high', 'medium', 'low'
+	            */
+	            var intensity = 0xffffff;
+	            if (this.el.dTarget.dataset && this.el.dTarget.dataset.brightness) {
+	                if (this.el.dTarget.dataset.brightness === 'high') {
+	                    intensity = 0xffffff;
+	                } else if (this.el.dTarget.dataset.brightness === 'medium') {
+	                    intensity = 0x808080;
+	                } else if (this.el.dTarget.dataset.brightness === 'low') {
+	                    intensity = 0x404040;
+	                }
+	            }
+
+	            // Create the ambient light and add it to the screen
+	            this.ambientLight = new THREE.AmbientLight(intensity);
+	            this.scene.add(this.ambientLight);
+	        }
+	    }, {
+	        key: 'addSkyBox',
+	        value: function addSkyBox() {
+	            _utils2.default.log(this.el.dTarget.dataset);
+	            if (this.el.dTarget.dataset && this.el.dTarget.dataset.skybox && this.el.dTarget.dataset.skyboxFormat) {
+	                /* 
+	                * Read the skybox data
+	                * Format: data-skybox="..." data-skybox-format="png"
+	                * Value: /path/to/skyboxfolder
+	                * ie. data-skybox="assets/space" data-skybox-format="png"
+	                *  -> In this scenario, there should be a folder called 'assets' in the
+	                *  -> same directory with the index.html, inside of the assets folder, there
+	                *  -> should be a 'space' folder, and inside of the space folder, there should be
+	                *  -> 6 images, space1.png to space6.png (extension indicated by data-skybox-format attribute)
+	                */
+	                // Get skybox path
+	                var skyboxPath = this.el.dTarget.dataset.skybox;
+	                // Strip the last character if user placed a slash in the end
+	                if (skyboxPath.substr(-1) === '/') {
+	                    skyboxPath = skyboxPath.slice(0, -1);
+	                }
+	                // Split path by slashes and get the name 
+	                var pathArray = skyboxPath.split('/');
+	                var skyboxName = pathArray[pathArray.length - 1];
+	                // Get the image format
+	                var skyboxFormat = this.el.dTarget.dataset.skyboxFormat;
+	                // Strip the first character if user placed a dot in the beginning
+	                if (skyboxFormat.substr(0, 1) === '.') {
+	                    skyboxFormat = skyboxFormat.substr(1);
+	                }
+	                // Create the cube that will hold the skybox images 
+	                var skyGeometry = new THREE.CubeGeometry(5000, 5000, 5000);
+	                // Generate the skybox material array
+	                var skyMaterialArray = [];
+	                for (var i = 1; i < 7; i++) {
+	                    skyMaterialArray.push(new THREE.MeshBasicMaterial({
+	                        map: THREE.ImageUtils.loadTexture(skyboxPath + '/' + skyboxName + i + '.' + skyboxFormat),
+	                        side: THREE.BackSide
+	                    }));
+	                }
+	                // Create the material that will make up the skybox
+	                var skyMaterial = new THREE.MeshFaceMaterial(skyMaterialArray);
+	                // Create the actual skybox element
+	                this.skybox = new THREE.Mesh(skyGeometry, skyMaterial);
+	                this.scene.add(this.skybox);
+	                _utils2.default.log(this);
+	            }
+	        }
+	    }, {
+	        key: 'addRenderers',
+	        value: function addRenderers() {
+	            // Initiate the WebGL renderers and set the pixel ratio
+	            this.renderer = new THREE.WebGLRenderer();
+	            this.renderer.setPixelRatio(window.devicePixelRatio);
+	        }
+	    }, {
+	        key: 'appendDOM',
+	        value: function appendDOM() {
+	            // Remove all canvas elements (for re-rendering)
+	            var canvasElements = document.getElementsByTagName('canvas');
+	            for (var i = 0; i < canvasElements.length; i++) {
+	                _utils2.default.log('*-*-*-*-*-*');
+	                _utils2.default.log(canvasElements[i]);
+	                canvasElements[i].parentElement.removeChild(canvasElements[i]);
+	            }
+	            // Append the canvas element to DOM
+	            document.body.appendChild(this.renderer.domElement);
+	        }
+	    }, {
+	        key: 'initVR',
+	        value: function initVR() {
+	            // Initiate VR handler libraries
+	            this.vrControls = new THREE.VRControls(this.perspectiveCamera);
+	            this.vrEffect = new THREE.VREffect(this.renderer);
+	            this.vrManager = new WebVRManager(this.renderer, this.vrEffect, { hideButton: false });
+	        }
+	    }, {
+	        key: 'setRatio',
+	        value: function setRatio() {
+	            var width = window.innerWidth;
+	            var height = window.innerHeight;
+	            // Set aspect ratio of the camera
+	            this.perspectiveCamera.aspect = width / height;
+	            this.perspectiveCamera.updateProjectionMatrix();
+	            // Set VR aspect ratio
+	            this.vrEffect.setSize(width, height);
+	        }
+	    }, {
+	        key: 'onWindowResize',
+	        value: function onWindowResize() {
+	            var self = this;
+	            // Set window resize listener
+	            window.addEventListener('resize', function () {
+	                // Recalculate aspect ratio according to the new screen size
+	                self.setRatio();
+	            }, false);
+	        }
+	    }, {
+	        key: 'attachRenderLoop',
+	        value: function attachRenderLoop() {
+	            var self = this;
+	            var renderLoopRunnable = function renderLoopRunnable(timestamp) {
+	                // Update camera position with latest input values
+	                self.vrControls.update();
+	                // Render the scene using the WebVR manager
+	                self.vrManager.render(self.scene, self.perspectiveCamera, timestamp);
+	            };
+
+	            _api2.default.get().attachRenderLoopRunnable('scene_update', renderLoopRunnable);
 	        }
 	    }], [{
 	        key: 'compile',

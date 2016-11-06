@@ -4,6 +4,7 @@
   "description": "Building blocks of VR web.",
   "main": "dist/wirtual.js",
   "scripts": {
+    "start": "npm run build",
     "build": "rm -rf dist/; webpack --progress --colors --mode=build; grunt attach-vendors; grunt serve;",
     "dev": "webpack --progress --colors --watch --mode=dev",
     "test": "mocha --compilers js:babel-core/register --colors -w ./test/*.spec.js"

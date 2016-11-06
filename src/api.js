@@ -8,6 +8,7 @@ export default class Api {
         this.scene = null;
         this.domRoot = null;
         this.dom = {};
+        this.renderLoopRunnables = {};
     }
 
     // Returns the active instance of the API
@@ -34,5 +35,7 @@ export default class Api {
     _setRootElementID(wid) { this.domRoot = wid; }
     _getRootElementID() { return this.domRoot; }
 
-    _setScene(scene) { }
+    attachRenderLoopRunnable(runnableName, runnable){ this.renderLoopRunnables[runnableName] = runnable; }
+    detachRenderLoopRunnable(runnableName){ this.renderLoopRunnables[runnableName] = null; }
+    getRenderLoopRunnables(){ return this.renderLoopRunnables; }
 }
