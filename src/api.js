@@ -39,6 +39,13 @@ export default class Api {
         return this._getElement(this._getRootElementID());
     }
 
+    getScene(){
+        var rootElement = this.getRootElement();
+        if (!rootElement){ return null; }
+        if (!rootElement.vTarget){ return null; } 
+        return rootElement.vTarget.scene; 
+    }
+
     attachRenderLoopRunnable(runnableName, runnable){ this.renderLoopRunnables[runnableName] = runnable; }
     detachRenderLoopRunnable(runnableName){ this.renderLoopRunnables[runnableName] = null; }
     getRenderLoopRunnables(){ return this.renderLoopRunnables; }

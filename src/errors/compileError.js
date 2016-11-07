@@ -11,6 +11,9 @@ export default class CompileError extends Error {
     static domElementFailedToCompile(id) { throw new CompileError('Element with ID ' + id + ' failed to compile.'); }
     static compilationError(compileError) { throw new CompileError('An error occured while compiling: '+compileError); }
     static dTargetNotFound(elementName) { throw new CompileError('Cannot compile '+elementName+': dTarget not found.'); }
-    static depthNotValid() { throw new CompileError('\'wr-depth-<int>\' attribute could not be parsed.'); }
-
+    static depthNotValid() { throw new CompileError('\'wr-depth-<int>\' could not be parsed.'); }
+    static axisNotValid() { throw new CompileError('\'wr-axis-<degrees>\' could not be parsed.'); }
+    static levelNotValid() { throw new CompileError('\'wr-level-<int>\' could not be parsed.'); }
+    static sphereSizeNotDefined() { throw new CompileError('\'data-size\' attribute must be set for \'wr-sphere\'.'); }
+    static sceneNotFound() { throw new CompileError('Trying to add an element to scene, but scene not found.'); }
 }

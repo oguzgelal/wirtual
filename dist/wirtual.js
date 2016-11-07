@@ -44138,6 +44138,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _scene2 = _interopRequireDefault(_scene);
 
+	var _sphere = __webpack_require__(6);
+
+	var _sphere2 = _interopRequireDefault(_sphere);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -44388,20 +44392,56 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            /* ------ SCAN CLASSES ------ */
 
-	            // Create the scene with the container
+	            // CONTAINER ---
+
+	            // 'wr-container' - Create the scene with the container
 	            if (currentElementClassName.match('wr-container')) {
 	                _scene2.default.compile(currentElement);
 	            }
 
-	            // Parse depth and append it to the payload (for passing on to the child elements)
-	            if (currentElementClassName.match(/wr-depth-\d*/g)) {
-	                var depth = currentElementClassName.match(/wr-depth-\d*/g)[0];
+	            // GRID SYSTEM ---
+
+	            // 'wr-depth-<int>' - Parse depth and append it to the payload (for passing on to the child elements)
+	            var depthRegex = /wr-depth-(-?)\d+/g;
+	            if (currentElementClassName.match(depthRegex)) {
+	                var depth = currentElementClassName.match(depthRegex)[0];
 	                try {
 	                    depth = parseInt(depth.replace('wr-depth-', '').trim());
 	                } catch (e) {
 	                    _compileError2.default.depthNotValid();return;
 	                }
 	                payload.depth = depth;
+	            }
+
+	            // 'wr-axis-<degrees>' - Parse axis and append it to the payload (for passing on to the child elements)
+	            var axisRegex = /wr-axis-(-?)\d+/g;
+	            if (currentElementClassName.match(axisRegex)) {
+	                var axis = currentElementClassName.match(axisRegex)[0];
+	                try {
+	                    axis = parseInt(axis.replace('wr-axis-', '').trim());
+	                } catch (e) {
+	                    _compileError2.default.axisNotValid();return;
+	                }
+	                payload.axis = axis;
+	            }
+
+	            // 'wr-level-<int>' - Parse level and append it to the payload (for passing on to the child elements)
+	            var levelRegex = /wr-level-(-?)\d+/g;
+	            if (currentElementClassName.match(levelRegex)) {
+	                var level = currentElementClassName.match(levelRegex)[0];
+	                try {
+	                    level = parseInt(level.replace('wr-level-', '').trim());
+	                } catch (e) {
+	                    _compileError2.default.levelNotValid();return;
+	                }
+	                payload.level = level;
+	            }
+
+	            // SPHERE ---
+
+	            // 'wr-sphere' - Parse sphere and add it to the scene
+	            if (currentElementClassName.match('wr-sphere')) {
+	                _sphere2.default.compile(currentElement);
 	            }
 
 	            /* -------------------------- */
@@ -44653,6 +44693,32 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var pi = 3.1415;
 	            return degrees * (pi / 180);
 	        }
+
+	        // Calculate x y z coordinates and rotation given grid system variables
+
+	    }, {
+	        key: 'calculatePosition',
+	        value: function calculatePosition(depth, axis, level) {
+	            depth = parseInt(depth);
+	            axis = parseInt(axis);
+	            level = parseInt(level);
+	            var self = this;
+	            return {
+	                x: depth * Math.sin(self.toRadians(axis)),
+	                y: level,
+	                z: depth * Math.cos(self.toRadians(axis)) * -1,
+	                rotation: self.toRadians(axis)
+	            };
+	        }
+
+	        // TODO
+	        // Calculate rotation given x y z coordinates (for 'position absolute' cases)
+
+	    }, {
+	        key: 'calculateRotation',
+	        value: function calculateRotation(x, y, z) {
+	            return null;
+	        }
 	    }]);
 
 	    return Utils;
@@ -44751,6 +44817,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return this._getElement(this._getRootElementID());
 	        }
 	    }, {
+	        key: 'getScene',
+	        value: function getScene() {
+	            var rootElement = this.getRootElement();
+	            if (!rootElement) {
+	                return null;
+	            }
+	            if (!rootElement.vTarget) {
+	                return null;
+	            }
+	            return rootElement.vTarget.scene;
+	        }
+	    }, {
 	        key: 'attachRenderLoopRunnable',
 	        value: function attachRenderLoopRunnable(runnableName, runnable) {
 	            this.renderLoopRunnables[runnableName] = runnable;
@@ -44838,7 +44916,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'depthNotValid',
 	        value: function depthNotValid() {
-	            throw new CompileError('\'wr-depth-<int>\' attribute could not be parsed.');
+	            throw new CompileError('\'wr-depth-<int>\' could not be parsed.');
+	        }
+	    }, {
+	        key: 'axisNotValid',
+	        value: function axisNotValid() {
+	            throw new CompileError('\'wr-axis-<degrees>\' could not be parsed.');
+	        }
+	    }, {
+	        key: 'levelNotValid',
+	        value: function levelNotValid() {
+	            throw new CompileError('\'wr-level-<int>\' could not be parsed.');
+	        }
+	    }, {
+	        key: 'sphereSizeNotDefined',
+	        value: function sphereSizeNotDefined() {
+	            throw new CompileError('\'data-size\' attribute must be set for \'wr-sphere\'.');
+	        }
+	    }, {
+	        key: 'sceneNotFound',
+	        value: function sceneNotFound() {
+	            throw new CompileError('Trying to add an element to scene, but scene not found.');
 	        }
 	    }]);
 
@@ -45086,6 +45184,200 @@ return /******/ (function(modules) { // webpackBootstrap
 	}();
 
 	exports.default = Scene;
+	module.exports = exports['default'];
+
+/***/ },
+/* 6 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _api = __webpack_require__(3);
+
+	var _api2 = _interopRequireDefault(_api);
+
+	var _compileError = __webpack_require__(4);
+
+	var _compileError2 = _interopRequireDefault(_compileError);
+
+	var _utils = __webpack_require__(2);
+
+	var _utils2 = _interopRequireDefault(_utils);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var Sphere = function () {
+	    function Sphere(el) {
+	        _classCallCheck(this, Sphere);
+
+	        // Pointer to the parent
+	        this.el = el;
+	        // Make sure DOM representation exists
+	        if (!this.el.dTarget) {
+	            _compileError2.default.dTargetNotFound('sphere');return;
+	        }
+	        // Set default detail level for spheres
+	        this.defaultDetail = 25;
+	        // Initialise
+	        this.init();
+	    }
+
+	    // Take element with 'wr-container' class and create the scene based on it
+
+
+	    _createClass(Sphere, [{
+	        key: 'init',
+
+
+	        // Sphere creation is being chained by callbacks because they have to be
+	        // synchronous - as additional assets may needed to be loaded 
+	        value: function init() {
+	            var _this = this;
+
+	            // Create sphere geometry
+	            this.createSphereGeometry(function () {
+	                // Create material
+	                _this.createSphereMaterial(function () {
+	                    // Create sphere
+	                    _this.createSphere();
+	                    // Set sphere position
+	                    _this.setSpherePosition();
+	                    // Add sphere to scene
+	                    _this.addScene();
+	                });
+	            });
+	        }
+	    }, {
+	        key: 'createSphereGeometry',
+	        value: function createSphereGeometry(callback) {
+	            if (this.el.dTarget.dataset && this.el.dTarget.dataset.size) {
+	                // Fetch sphere radios from 'data-size' attribute
+	                var radius = this.el.dTarget.dataset.size;
+	                // Create geometry
+	                this.sphereGeometry = new THREE.SphereGeometry(radius, this.defaultDetail, this.defaultDetail);
+	                // Invoke the callback
+	                callback();
+	            } else {
+	                _compileError2.default.sphereSizeNotDefined();
+	            }
+	        }
+	    }, {
+	        key: 'createSphereMaterial',
+	        value: function createSphereMaterial(callback) {
+	            var self = this;
+	            // Sphere texture cover set
+	            if (self.el.dTarget.dataset && self.el.dTarget.dataset.cover) {
+	                // Load texture image
+	                self.loadTexture(self.el.dTarget.dataset.cover,
+	                // Got texture reference back from the method
+	                function (texture) {
+	                    _utils2.default.log(texture);
+	                    // Create the material with the texture
+	                    self.sphereMaterial = new THREE.MeshLambertMaterial({
+	                        map: texture,
+	                        overdraw: 0.5
+	                    });
+
+	                    callback();
+	                });
+	            }
+	            // Sphere texture covered not set, create lambert material with color
+	            else {
+	                    // Set color to a random color
+	                    var colorHex = '#' + (Math.random() * 0xFFFFFF << 0).toString(16);
+	                    var color = new THREE.Color(colorHex);
+	                    // If color is specified via data attribute, set color to it
+	                    if (self.el.dTarget.dataset && self.el.dTarget.dataset.color) {
+	                        color = new THREE.Color(self.el.dTarget.dataset.color);
+	                    }
+	                    // Create Lambert material with the color
+	                    self.sphereMaterial = new THREE.MeshLambertMaterial({ color: color });
+	                    // Invoke the callback
+	                    callback();
+	                }
+	        }
+	    }, {
+	        key: 'loadTexture',
+	        value: function loadTexture(cover, callback) {
+	            var textureLoader = new THREE.TextureLoader();
+	            //textureLoader.crossOrigin = 'use-credentials';
+	            textureLoader.load(cover, function (texture) {
+	                callback(texture);
+	            });
+	        }
+	    }, {
+	        key: 'createSphere',
+	        value: function createSphere() {
+	            // Create the sphere
+	            this.sphere = new THREE.Mesh(this.sphereGeometry, this.sphereMaterial);
+	        }
+	    }, {
+	        key: 'setSpherePosition',
+	        value: function setSpherePosition() {
+	            // Set default grid system (in case payload not found)
+	            var depth = 50,
+	                axis = 0,
+	                level = 0;
+	            // Fetch grid system variables from element payload
+	            if (this.el.payload) {
+	                if (this.el.payload.depth) {
+	                    depth = this.el.payload.depth;
+	                }
+	                if (this.el.payload.axis) {
+	                    axis = this.el.payload.axis;
+	                }
+	                if (this.el.payload.level) {
+	                    level = this.el.payload.level;
+	                }
+	            }
+	            // Calculate elements x y z coordinates based on grid system variables
+	            var pos = _utils2.default.calculatePosition(depth, axis, level);
+	            this.sphere.position.x = pos.x;
+	            this.sphere.position.y = pos.y;
+	            this.sphere.position.z = pos.z;
+	            this.sphere.rotation.y = pos.rotation * -1;
+	        }
+	    }, {
+	        key: 'addScene',
+	        value: function addScene() {
+	            var scene = _api2.default.get().getScene();
+	            if (!scene) {
+	                _compileError2.default.sceneNotFound();
+	            }
+	            scene.add(this.sphere);
+	        }
+	    }, {
+	        key: 'attachRenderLoop',
+	        value: function attachRenderLoop() {}
+	    }], [{
+	        key: 'compile',
+	        value: function compile(el) {
+	            // Remove element from the scene if it is already there
+	            var scene = _api2.default.get().getScene();
+	            if (scene && el.vTarget) {
+	                scene.remove(el.vTarget.sphere);
+	            }
+	            // Remove any previous references if exist (for recompiling)
+	            if (el.vTarget) {
+	                delete el.vTarget;
+	            }
+	            // Instantiate scene object and attach it to the element 
+	            el.vTarget = new Sphere(el);
+	        }
+	    }]);
+
+	    return Sphere;
+	}();
+
+	exports.default = Sphere;
 	module.exports = exports['default'];
 
 /***/ }

@@ -62,26 +62,21 @@
 		data-brightness="medium" 
 		data-skybox="assets/skybox/space" 
 		data-skybox-format="png">
-		<!-- Distance from the camera (wr-depth-0 would be the eye of the user) -->
+		<!-- Z: Distance from the camera (wr-depth-0 would be the eye of the user) -->
 		<div class="wr-depth-50">
-			<!-- Axis around the user -->
+			<!-- X: Axis around the user -->
 			<!-- (wr-axis-0 is right in front of user) -->
 			<!-- (wr-axis-90 would be on the right of user) -->
-			<!-- (wr-axis-270 or wr-axis-m-90 would be on the left of user) -->
+			<!-- (wr-axis--90 would be on the left of user) -->
 			<div class="wr-axis-0">
-				<!-- Z Coordinate -->
+				<!-- Y: Height of the component -->
 				<!-- (wr-level-0 is the users level) -->
 				<!-- (wr-level-200 is 200 unit above user) -->
-				<!-- (wr-level-m-200 is 200 unit below user) -->
+				<!-- (wr-level--200 is 200 unit below user) -->
 				<div class="wr-level-0">
 					<!-- Define a sphere and cover with earh skin -->
-					<div class="wr-sphere" 
-                        data-radius="20" 
-                        data-detail="50" 
-                        data-cover="earth.jpg">
-                    </div>
-					
-					<div class="wr-test"></div>
+					<div class="wr-sphere" data-size="20" data-cover="assets/covers/earth.jpg"></div>
+					<!-- <div class="wr-sphere" data-size="20" data-color="red"></div> -->
 				</div>
 			</div>
 		</div>

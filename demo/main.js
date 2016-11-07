@@ -26,15 +26,13 @@
       new THREE.SphereGeometry(1, 5, 5),
       new THREE.MeshBasicMaterial({ color: 0xffffff })
     );
-    //scene.add(particleLight);
-    //var pointLight = new THREE.PointLight(0xffffff, 10, 800);
-    //particleLight.add(pointLight);
+    scene.add(particleLight);
+    var pointLight = new THREE.PointLight(0xffffff, 10, 800);
+    particleLight.add(pointLight);
     
-
-
-    //var directionalLight = new THREE.DirectionalLight(0xffffff, .5);
-    //directionalLight.position.set(5, 25, 25).normalize();
-    //scene.add(directionalLight);
+    var directionalLight = new THREE.DirectionalLight(0xffffff, .5);
+    directionalLight.position.set(5, 25, 25).normalize();
+    scene.add(directionalLight);
 
     var light = new THREE.AmbientLight(0x404040); // soft white light
     scene.add(light);
@@ -44,7 +42,7 @@
     var skyMaterialArray = [];
     for (var i = 1; i < 7; i++) {
       skyMaterialArray.push(new THREE.MeshBasicMaterial({
-        map: THREE.ImageUtils.loadTexture('space/space' + i + '.png'),
+        map: THREE.ImageUtils.loadTexture('assets/skybox/space/space' + i + '.png'),
         side: THREE.BackSide
       }));
     }
@@ -72,16 +70,21 @@
 
   function loadScene() {
     var loader = new THREE.TextureLoader();
-    loader.load('earth.jpg', function (texture) {
+    loader.load('/assets/covers/earth.jpg', function (texture) {
       var geometry = new THREE.SphereGeometry(30, 25, 25);
       var material = new THREE.MeshLambertMaterial({
         map: texture,
         overdraw: 0.5
       });
+
+      var depth = 80;
+      var axis = 360;
+      var level = 0;
+
       sphere = new THREE.Mesh(geometry, material);
-      sphere.position.x = 0;
-      sphere.position.y = 0;
-      sphere.position.z = -50;
+      sphere.position.x = depth * Math.round(Math.sin(toRadians(axis)));
+      sphere.position.y = level;
+      sphere.position.z = depth * Math.round(Math.cos(toRadians(axis))) * -1;
       sphere.name = 'sphere';
       window.sphere = sphere;
       scene.add(sphere);

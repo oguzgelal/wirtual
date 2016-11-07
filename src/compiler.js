@@ -3,6 +3,7 @@ import CompileError from './errors/compileError';
 import Api from './api';
 
 import Scene from './components/scene';
+import Sphere from './components/sphere';
 
 export default class Compiler {
 
@@ -154,16 +155,45 @@ export default class Compiler {
         
         /* ------ SCAN CLASSES ------ */
 
-        // Create the scene with the container
+        // CONTAINER ---
+
+        // 'wr-container' - Create the scene with the container
         if (currentElementClassName.match('wr-container')) { Scene.compile(currentElement); }
         
-        // Parse depth and append it to the payload (for passing on to the child elements)
-        if (currentElementClassName.match(/wr-depth-\d*/g)){
-            let depth = currentElementClassName.match(/wr-depth-\d*/g)[0];
+        // GRID SYSTEM ---
+
+        // 'wr-depth-<int>' - Parse depth and append it to the payload (for passing on to the child elements)
+        let depthRegex = /wr-depth-(-?)\d+/g;
+        if (currentElementClassName.match(depthRegex)){
+            let depth = currentElementClassName.match(depthRegex)[0];
             try { depth = parseInt(depth.replace('wr-depth-', '').trim()); }
             catch(e){ CompileError.depthNotValid(); return; }
             payload.depth = depth;
         }
+
+        // 'wr-axis-<degrees>' - Parse axis and append it to the payload (for passing on to the child elements)
+        let axisRegex = /wr-axis-(-?)\d+/g;
+        if (currentElementClassName.match(axisRegex)){
+            let axis = currentElementClassName.match(axisRegex)[0];
+            try { axis = parseInt(axis.replace('wr-axis-', '').trim()); }
+            catch(e){ CompileError.axisNotValid(); return; }
+            payload.axis = axis;
+        }
+
+        // 'wr-level-<int>' - Parse level and append it to the payload (for passing on to the child elements)
+        let levelRegex = /wr-level-(-?)\d+/g;
+        if (currentElementClassName.match(levelRegex)){
+            let level = currentElementClassName.match(levelRegex)[0];
+            try { level = parseInt(level.replace('wr-level-', '').trim()); }
+            catch(e){ CompileError.levelNotValid(); return; }
+            payload.level = level;
+        }
+
+        // SPHERE ---
+
+        // 'wr-sphere' - Parse sphere and add it to the scene
+        if (currentElementClassName.match('wr-sphere')) { Sphere.compile(currentElement); }
+
 
         /* -------------------------- */
 

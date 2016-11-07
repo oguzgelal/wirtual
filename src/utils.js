@@ -31,4 +31,24 @@ export default class Utils {
         const pi = 3.1415;
         return degrees * (pi / 180);
     }
+
+    // Calculate x y z coordinates and rotation given grid system variables
+    static calculatePosition(depth, axis, level){
+        depth = parseInt(depth);
+        axis = parseInt(axis);
+        level = parseInt(level);
+        let self = this;
+        return {
+            x: depth * Math.sin(self.toRadians(axis)),
+            y: level,
+            z: depth * Math.cos(self.toRadians(axis)) * -1,
+            rotation: self.toRadians(axis)
+        }
+    }
+    
+    // TODO
+    // Calculate rotation given x y z coordinates (for 'position absolute' cases)
+    static calculateRotation(x, y, z){
+        return null;
+    }
 }
