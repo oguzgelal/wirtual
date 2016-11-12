@@ -44173,11 +44173,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    new _compiler2.default();
 	};
 
-	// Initiate the library (on page load)
-
-
 	exports.default = Wirtual;
-	new Wirtual({ debug: true });
+
+
+	document.addEventListener("DOMContentLoaded", function (event) {
+	    // Initiate the library (on page load)
+	    new Wirtual({ debug: true });
+	});
 	module.exports = exports['default'];
 
 /***/ },
@@ -44270,17 +44272,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	        value: function mark(wid, recursionLevel, callback) {
 	            var elementCurrentDOM = this.getCurrentState(wid);
 	            // Recurse throuh children
-	            var _iteratorNormalCompletion = true;
-	            var _didIteratorError = false;
-	            var _iteratorError = undefined;
-
-	            try {
-	                for (var _iterator = elementCurrentDOM.children[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	                    var child = _step.value;
-
+	            var children = elementCurrentDOM.children;
+	            for (var i = 0; i < children.length; i++) {
+	                var child = children[i];
+	                if (child) {
 	                    var childID = '';
 	                    // Child is not stamped
-	                    if (!child.dataset.wid) {
+	                    if (!child.dataset || !child.dataset.wid) {
+	                        console.log(child);
 	                        // Stamp child
 	                        childID = this.stamp(child, { parent: wid });
 	                        // Add child to its parent 
@@ -44293,22 +44292,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    // Call recursion with the child
 	                    this.mark(childID, recursionLevel + 1);
 	                }
-	                // All elements marked
-	            } catch (err) {
-	                _didIteratorError = true;
-	                _iteratorError = err;
-	            } finally {
-	                try {
-	                    if (!_iteratorNormalCompletion && _iterator.return) {
-	                        _iterator.return();
-	                    }
-	                } finally {
-	                    if (_didIteratorError) {
-	                        throw _iteratorError;
-	                    }
-	                }
 	            }
-
+	            // All elements marked
 	            if (recursionLevel === 0) {
 	                if (callback) {
 	                    callback();
@@ -44369,13 +44354,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    var changedChildrenCount = 0,
 	                        changedChildren = -1;
 	                    if (elementStored.children) {
-	                        var _iteratorNormalCompletion2 = true;
-	                        var _didIteratorError2 = false;
-	                        var _iteratorError2 = undefined;
+	                        var _iteratorNormalCompletion = true;
+	                        var _didIteratorError = false;
+	                        var _iteratorError = undefined;
 
 	                        try {
-	                            for (var _iterator2 = elementStored.children[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	                                var childID = _step2.value;
+	                            for (var _iterator = elementStored.children[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	                                var childID = _step.value;
 
 	                                if (self.hasChange(childID)) {
 	                                    changedChildrenCount += 1;
@@ -44383,16 +44368,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	                                }
 	                            }
 	                        } catch (err) {
-	                            _didIteratorError2 = true;
-	                            _iteratorError2 = err;
+	                            _didIteratorError = true;
+	                            _iteratorError = err;
 	                        } finally {
 	                            try {
-	                                if (!_iteratorNormalCompletion2 && _iterator2.return) {
-	                                    _iterator2.return();
+	                                if (!_iteratorNormalCompletion && _iterator.return) {
+	                                    _iterator.return();
 	                                }
 	                            } finally {
-	                                if (_didIteratorError2) {
-	                                    throw _iteratorError2;
+	                                if (_didIteratorError) {
+	                                    throw _iteratorError;
 	                                }
 	                            }
 	                        }
@@ -44529,27 +44514,27 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            // Call recursion for all the children
 	            if (currentElement.children) {
-	                var _iteratorNormalCompletion3 = true;
-	                var _didIteratorError3 = false;
-	                var _iteratorError3 = undefined;
+	                var _iteratorNormalCompletion2 = true;
+	                var _didIteratorError2 = false;
+	                var _iteratorError2 = undefined;
 
 	                try {
-	                    for (var _iterator3 = currentElement.children[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-	                        var childID = _step3.value;
+	                    for (var _iterator2 = currentElement.children[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	                        var childID = _step2.value;
 
 	                        self.compile(childID, payload, recursionLevel + 1, null);
 	                    }
 	                } catch (err) {
-	                    _didIteratorError3 = true;
-	                    _iteratorError3 = err;
+	                    _didIteratorError2 = true;
+	                    _iteratorError2 = err;
 	                } finally {
 	                    try {
-	                        if (!_iteratorNormalCompletion3 && _iterator3.return) {
-	                            _iterator3.return();
+	                        if (!_iteratorNormalCompletion2 && _iterator2.return) {
+	                            _iterator2.return();
 	                        }
 	                    } finally {
-	                        if (_didIteratorError3) {
-	                            throw _iteratorError3;
+	                        if (_didIteratorError2) {
+	                            throw _iteratorError2;
 	                        }
 	                    }
 	                }

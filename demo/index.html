@@ -36,7 +36,8 @@
 		<script src="wirtual.js"></script>
 
 		<script>
-			if (Wirtual){
+			document.addEventListener("DOMContentLoaded", function(event) {
+				if (Wirtual){
 				Wirtual.attachGlobalRunnable('orbits_move', function(timestamp, timestampDelta){
 					var coef = timestamp / 1500;
 					var spherePosX = 0, spherePosY = 0, spherePosZ = 0;
@@ -64,6 +65,7 @@
 					}
 				});
 			}
+			});
 		</script>
 
 	</body>

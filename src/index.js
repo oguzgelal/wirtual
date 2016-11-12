@@ -14,5 +14,7 @@ export default class Wirtual {
     }
 }
 
-// Initiate the library (on page load)
-new Wirtual({ debug: true });
+document.addEventListener("DOMContentLoaded", function(event) {
+    // Initiate the library (on page load)
+    new Wirtual({ debug: true });
+});

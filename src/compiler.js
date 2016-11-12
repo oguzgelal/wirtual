@@ -46,19 +46,24 @@ export default class Compiler {
     mark(wid, recursionLevel, callback) {
         let elementCurrentDOM = this.getCurrentState(wid);
         // Recurse throuh children
-        for (let child of elementCurrentDOM.children) {
-            let childID = '';
-            // Child is not stamped
-            if (!child.dataset.wid) {
-                // Stamp child
-                childID = this.stamp(child, { parent: wid });
-                // Add child to its parent 
-                Api.get()._addElementChildren(wid, childID);
+        let children = elementCurrentDOM.children;
+        for (let i = 0; i < children.length; i++) {
+            let child = children[i];
+            if (child){
+                let childID = '';
+                // Child is not stamped
+                if (!child.dataset || !child.dataset.wid) {
+                    console.log(child);
+                    // Stamp child
+                    childID = this.stamp(child, { parent: wid });
+                    // Add child to its parent 
+                    Api.get()._addElementChildren(wid, childID);
+                }
+                // Child is stamped
+                else { childID = child.dataset.wid; }
+                // Call recursion with the child
+                this.mark(childID, recursionLevel + 1);
             }
-            // Child is stamped
-            else { childID = child.dataset.wid; }
-            // Call recursion with the child
-            this.mark(childID, recursionLevel + 1);
         }
         // All elements marked
         if (recursionLevel === 0) {
