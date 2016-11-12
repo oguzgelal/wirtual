@@ -4,6 +4,7 @@ import Api from './api';
 
 import Scene from './components/scene';
 import Sphere from './components/sphere';
+import Light from './components/light';
 
 export default class Compiler {
 
@@ -194,6 +195,11 @@ export default class Compiler {
         // 'wr-sphere' - Parse sphere and add it to the scene
         if (currentElementClassName.match('wr-sphere')) { Sphere.compile(currentElement); }
 
+        // LIGHT ---
+
+        // 'wr-sphere' - Parse sphere and add it to the scene
+        if (currentElementClassName.match('wr-light')) { Light.compile(currentElement); }
+
 
         /* -------------------------- */
 
@@ -241,16 +247,6 @@ export default class Compiler {
         let elementStored = this.getStoredState(wid);
         // Get current state of the DOM element
         let elementCurrentDOM = this.getCurrentState(wid);
-        /*
-        console.log('Current');
-        console.log(elementCurrentDOM);
-        console.log('Stored');
-        console.log(elementStored);
-        console.log('Current - hash');
-        console.log(this.hash(elementCurrentDOM));
-        console.log('Stored - hash');
-        console.log(elementStored.hash);
-        */
         // DOM change if hashes are not the same
         return elementStored.hash !== this.hash(elementCurrentDOM);
     }
@@ -318,10 +314,24 @@ export default class Compiler {
             if (THREE.AnimationHandler) { THREE.AnimationHandler.update(timestampDelta); }
 
             // Execute the runnables atached to the render loop
-            let renderLoopRunnables = Api.get().getRenderLoopRunnables();
+            let renderLoopRunnables = Api.get()._getRenderLoopRunnables();
             for (let runnableIndex in renderLoopRunnables){
                 if (renderLoopRunnables[runnableIndex] && typeof renderLoopRunnables[runnableIndex] === 'function'){
-                    renderLoopRunnables[runnableIndex](timestamp);
+                    renderLoopRunnables[runnableIndex](timestamp, timestampDelta);
+                }
+            }
+
+            // Loop through elements to execute all attached runnables
+            let renderedElements = Api.get().dom;
+            for (let elementIndex in renderedElements){
+                if (renderedElements[elementIndex] && renderedElements[elementIndex].runnables){
+                    // Execute render loop runnables atached to the rendered elements
+                    let internalRenderLoopRunnables = renderedElements[elementIndex].runnables;
+                    for (let runnableIndex in internalRenderLoopRunnables){
+                        if (internalRenderLoopRunnables[runnableIndex] && typeof internalRenderLoopRunnables[runnableIndex] === 'function'){
+                            internalRenderLoopRunnables[runnableIndex](timestamp, timestampDelta);
+                        }
+                    }
                 }
             }
 

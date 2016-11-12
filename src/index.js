@@ -12,7 +12,6 @@ export default class Wirtual {
         // This will start the compilation of the page 
         new Compiler();
     }
-
 }
 
 // Initiate the library (on page load)

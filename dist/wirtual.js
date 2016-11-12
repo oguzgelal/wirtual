@@ -1,4 +1,74 @@
 (function(){
+WebVRConfig = {
+    /***** Webvr-polyfill configuration *****/
+    // Forces availability of VR mode.
+    FORCE_ENABLE_VR: true, // Default: false.
+    // Complementary filter coefficient. 0 for accelerometer, 1 for gyro.
+    K_FILTER: 0.98, // Default: 0.98.
+    // How far into the future to predict during fast motion.
+    PREDICTION_TIME_S: 0.040, // Default: 0.040 (in seconds).
+    // Flag to disable touch panner. In case you have your own touch controls
+    TOUCH_PANNER_DISABLED: false, // Default: false.
+    // Enable yaw panning only, disabling roll and pitch. This can be useful for
+    // panoramas with nothing interesting above or below.
+    YAW_ONLY: false, // Default: false.
+    /*** Webvr-boilerplate configuration ***/
+    // Forces distortion in VR mode.
+    FORCE_DISTORTION: false, // Default: false.
+    // Override the distortion background color.
+    DISTORTION_BGCOLOR: {x: 0, y: 0, z: 0, w: 1}, // Default: (0,0,0,1).
+    // Prevent distortion from happening.
+    PREVENT_DISTORTION: false, // Default: false.
+    // Show eye centers for debugging.
+    SHOW_EYE_CENTERS: false, // Default: false.
+    // Prevent the online DPDB from being fetched.
+    NO_DPDB_FETCH: false,  // Default: false.
+};;
+// <meta http-equiv="X-UA-Compatible" content="IE=edge">
+let metaXUACompatible = document.createElement('meta');
+metaXUACompatible.httpEquiv = "X-UA-Compatible";
+metaXUACompatible.content = "IE=edge";
+document.getElementsByTagName('head')[0].appendChild(metaXUACompatible);
+
+// <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+let metaContentType = document.createElement('meta');
+metaContentType.httpEquiv = "Content-Type";
+metaContentType.content = "text/html; charset=utf-8";
+document.getElementsByTagName('head')[0].appendChild(metaContentType);
+
+// <meta name="viewport" content="width=device-width, height=device-height, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0, shrink-to-fit=no">    
+let metaViewport = document.createElement('meta');
+metaViewport.name = "viewport";
+metaViewport.content = "width=device-width, height=device-height, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0, shrink-to-fit=no";
+document.getElementsByTagName('head')[0].appendChild(metaViewport);
+
+// <meta name="mobile-web-app-capable" content="yes">    
+let metaMobileWebAppCapable = document.createElement('meta');
+metaMobileWebAppCapable.name = "mobile-web-app-capable";
+metaMobileWebAppCapable.content = "yes";
+document.getElementsByTagName('head')[0].appendChild(metaMobileWebAppCapable);
+
+// <meta name="apple-mobile-web-app-capable" content="yes" />
+let metaAppleMobileWebAppCapable = document.createElement('meta');
+metaAppleMobileWebAppCapable.name = "apple-mobile-web-app-capable";
+metaAppleMobileWebAppCapable.content = "yes";
+document.getElementsByTagName('head')[0].appendChild(metaAppleMobileWebAppCapable);
+
+// <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+let metaAppleStatusBarStyle = document.createElement('meta');
+metaAppleStatusBarStyle.name = "apple-mobile-web-app-status-bar-style";
+metaAppleStatusBarStyle.content = "black-translucent";
+document.getElementsByTagName('head')[0].appendChild(metaAppleStatusBarStyle);  ;
+var css = document.createElement("style");
+css.type = "text/css";
+css.innerHTML = "body {\
+    overflow: hidden !important;\
+    margin: 0px !important;\
+    padding: 0px !important;\
+    width: 100% !important;\
+    height: 100% !important;\
+}";
+document.body.appendChild(css);;
 /*!
  * @overview es6-promise - a tiny implementation of Promises/A+.
  * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
@@ -44142,6 +44212,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _sphere2 = _interopRequireDefault(_sphere);
 
+	var _light = __webpack_require__(8);
+
+	var _light2 = _interopRequireDefault(_light);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -44444,6 +44518,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	                _sphere2.default.compile(currentElement);
 	            }
 
+	            // LIGHT ---
+
+	            // 'wr-sphere' - Parse sphere and add it to the scene
+	            if (currentElementClassName.match('wr-light')) {
+	                _light2.default.compile(currentElement);
+	            }
+
 	            /* -------------------------- */
 
 	            // Call recursion for all the children
@@ -44521,16 +44602,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var elementStored = this.getStoredState(wid);
 	            // Get current state of the DOM element
 	            var elementCurrentDOM = this.getCurrentState(wid);
-	            /*
-	            console.log('Current');
-	            console.log(elementCurrentDOM);
-	            console.log('Stored');
-	            console.log(elementStored);
-	            console.log('Current - hash');
-	            console.log(this.hash(elementCurrentDOM));
-	            console.log('Stored - hash');
-	            console.log(elementStored.hash);
-	            */
 	            // DOM change if hashes are not the same
 	            return elementStored.hash !== this.hash(elementCurrentDOM);
 	        }
@@ -44615,10 +44686,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	                }
 
 	                // Execute the runnables atached to the render loop
-	                var renderLoopRunnables = _api2.default.get().getRenderLoopRunnables();
+	                var renderLoopRunnables = _api2.default.get()._getRenderLoopRunnables();
 	                for (var runnableIndex in renderLoopRunnables) {
 	                    if (renderLoopRunnables[runnableIndex] && typeof renderLoopRunnables[runnableIndex] === 'function') {
-	                        renderLoopRunnables[runnableIndex](timestamp);
+	                        renderLoopRunnables[runnableIndex](timestamp, timestampDelta);
+	                    }
+	                }
+
+	                // Loop through elements to execute all attached runnables
+	                var renderedElements = _api2.default.get().dom;
+	                for (var elementIndex in renderedElements) {
+	                    if (renderedElements[elementIndex] && renderedElements[elementIndex].runnables) {
+	                        // Execute render loop runnables atached to the rendered elements
+	                        var internalRenderLoopRunnables = renderedElements[elementIndex].runnables;
+	                        for (var _runnableIndex in internalRenderLoopRunnables) {
+	                            if (internalRenderLoopRunnables[_runnableIndex] && typeof internalRenderLoopRunnables[_runnableIndex] === 'function') {
+	                                internalRenderLoopRunnables[_runnableIndex](timestamp, timestampDelta);
+	                            }
+	                        }
 	                    }
 	                }
 
@@ -44811,11 +44896,46 @@ return /******/ (function(modules) { // webpackBootstrap
 	        value: function _getRootElementID() {
 	            return this.domRoot;
 	        }
+
+	        // Return render loop runnable functions
+
+	    }, {
+	        key: '_getRenderLoopRunnables',
+	        value: function _getRenderLoopRunnables() {
+	            return this.renderLoopRunnables;
+	        }
+	    }, {
+	        key: '_getWidByID',
+	        value: function _getWidByID(id) {
+	            var el = document.getElementById(id);
+	            if (el) {
+	                return el.dataset.wid;
+	            }
+	            return null;
+	        }
+
+	        // Get element with the 'id' attribute (NOT wid)
+
+	    }, {
+	        key: 'getElementByID',
+	        value: function getElementByID(id) {
+	            var wid = this._getWidByID(id);
+	            var dataEl = this._getElement(wid);
+	            // Return the main threejs object (not internal objects)
+	            if (dataEl && dataEl.vTarget && dataEl.vTarget.mainTarget) {
+	                return dataEl.vTarget.mainTarget;
+	            }
+	            return null;
+	        }
+	        // Get the root element
+
 	    }, {
 	        key: 'getRootElement',
 	        value: function getRootElement() {
 	            return this._getElement(this._getRootElementID());
 	        }
+	        // Get the active scene
+
 	    }, {
 	        key: 'getScene',
 	        value: function getScene() {
@@ -44828,20 +44948,45 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	            return rootElement.vTarget.scene;
 	        }
+
+	        // Attach runnable to an element through wid
+
 	    }, {
-	        key: 'attachRenderLoopRunnable',
-	        value: function attachRenderLoopRunnable(runnableName, runnable) {
+	        key: '_attachRunnable',
+	        value: function _attachRunnable(wid, runnableName, runnable) {
+	            var el = this._getElement(wid);
+	            if (el && typeof runnable === "function") {
+	                if (!el.runnables) {
+	                    el.runnables = {};
+	                }
+	                el.runnables[runnableName] = runnable;
+	            }
+	        }
+
+	        // Attach runnable to an element using the id attribute (not wid)
+
+	    }, {
+	        key: 'attachRunnable',
+	        value: function attachRunnable(id, runnableName, runnable) {
+	            var wid = this._getWidByID(id);
+	            if (wid) {
+	                this._attachRunnable(wid, runnableName, runnable);
+	            }
+	        }
+
+	        // Attach a function to run on every render loop
+
+	    }, {
+	        key: 'attachGlobalRunnable',
+	        value: function attachGlobalRunnable(runnableName, runnable) {
 	            this.renderLoopRunnables[runnableName] = runnable;
 	        }
+	        // Detach a function - useful when an element is removed from DOM
+
 	    }, {
-	        key: 'detachRenderLoopRunnable',
-	        value: function detachRenderLoopRunnable(runnableName) {
+	        key: 'detachGlobalRunnable',
+	        value: function detachGlobalRunnable(runnableName) {
 	            this.renderLoopRunnables[runnableName] = null;
-	        }
-	    }, {
-	        key: 'getRenderLoopRunnables',
-	        value: function getRenderLoopRunnables() {
-	            return this.renderLoopRunnables;
 	        }
 	    }], [{
 	        key: 'get',
@@ -44984,6 +45129,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (!this.el.dTarget) {
 	            _compileError2.default.dTargetNotFound('scene');return;
 	        }
+	        // For returning the main target through the API
+	        this.mainTarget = null;
 	        // Initialise
 	        this.init();
 	    }
@@ -45022,6 +45169,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        key: 'createScene',
 	        value: function createScene() {
 	            this.scene = new THREE.Scene();
+	            this.mainTarget = this.scene;
 	        }
 
 	        // Create camera with default options
@@ -45159,14 +45307,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        key: 'attachRenderLoop',
 	        value: function attachRenderLoop() {
 	            var self = this;
-	            var renderLoopRunnable = function renderLoopRunnable(timestamp) {
+	            _api2.default.get()._attachRunnable(self.el.id, 'scene_update', function (timestamp, timestampDelta) {
 	                // Update camera position with latest input values
 	                self.vrControls.update();
 	                // Render the scene using the WebVR manager
 	                self.vrManager.render(self.scene, self.perspectiveCamera, timestamp);
-	            };
-
-	            _api2.default.get().attachRenderLoopRunnable('scene_update', renderLoopRunnable);
+	            });
 	        }
 	    }], [{
 	        key: 'compile',
@@ -45210,6 +45356,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _utils2 = _interopRequireDefault(_utils);
 
+	var _spin = __webpack_require__(7);
+
+	var _spin2 = _interopRequireDefault(_spin);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -45226,6 +45376,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        // Set default detail level for spheres
 	        this.defaultDetail = 25;
+	        // For returning the main target through the API
+	        this.mainTarget = null;
 	        // Initialise
 	        this.init();
 	    }
@@ -45252,6 +45404,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    _this.setSpherePosition();
 	                    // Add sphere to scene
 	                    _this.addScene();
+	                    // Attach runnables
+	                    _this.attachRenderLoop();
 	                });
 	            });
 	        }
@@ -45318,6 +45472,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        value: function createSphere() {
 	            // Create the sphere
 	            this.sphere = new THREE.Mesh(this.sphereGeometry, this.sphereMaterial);
+	            // Set the main target
+	            this.mainTarget = this.sphere;
 	        }
 	    }, {
 	        key: 'setSpherePosition',
@@ -45356,14 +45512,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    }, {
 	        key: 'attachRenderLoop',
-	        value: function attachRenderLoop() {}
+	        value: function attachRenderLoop() {
+	            // Utilise spin if set
+	            _spin2.default.init(this.el);
+	        }
 	    }], [{
 	        key: 'compile',
 	        value: function compile(el) {
 	            // Remove element from the scene if it is already there
 	            var scene = _api2.default.get().getScene();
 	            if (scene && el.vTarget) {
-	                scene.remove(el.vTarget.sphere);
+	                scene.remove(el.vTarget.mainTarget);
 	            }
 	            // Remove any previous references if exist (for recompiling)
 	            if (el.vTarget) {
@@ -45378,6 +45537,162 @@ return /******/ (function(modules) { // webpackBootstrap
 	}();
 
 	exports.default = Sphere;
+	module.exports = exports['default'];
+
+/***/ },
+/* 7 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _api = __webpack_require__(3);
+
+	var _api2 = _interopRequireDefault(_api);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var Spin = function () {
+	    function Spin() {
+	        _classCallCheck(this, Spin);
+	    }
+
+	    _createClass(Spin, null, [{
+	        key: 'init',
+	        value: function init(el) {
+	            if (el.dTarget.dataset && el.dTarget.dataset.spin) {
+	                (function () {
+	                    // Get main target
+	                    var rotateEl = el.vTarget.mainTarget;
+	                    // Read the spin speed
+	                    var spinSpeed = parseFloat(el.dTarget.dataset.spin);
+	                    // Set the direction
+	                    if (el.dTarget.dataset.spinDirection && el.dTarget.dataset.spinDirection == "left") {
+	                        spinSpeed *= -1;
+	                    }
+
+	                    _api2.default.get()._attachRunnable(el.id, 'spin', function (timestamp, timestampDelta) {
+	                        rotateEl.rotation.y += spinSpeed * timestampDelta;
+	                    });
+	                })();
+	            }
+	        }
+	    }]);
+
+	    return Spin;
+	}();
+
+	exports.default = Spin;
+	module.exports = exports['default'];
+
+/***/ },
+/* 8 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _api = __webpack_require__(3);
+
+	var _api2 = _interopRequireDefault(_api);
+
+	var _compileError = __webpack_require__(4);
+
+	var _compileError2 = _interopRequireDefault(_compileError);
+
+	var _utils = __webpack_require__(2);
+
+	var _utils2 = _interopRequireDefault(_utils);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var Light = function () {
+	    function Light(el) {
+	        _classCallCheck(this, Light);
+
+	        // Pointer to the parent
+	        this.el = el;
+	        // Make sure DOM representation exists
+	        if (!this.el.dTarget) {
+	            _compileError2.default.dTargetNotFound('light');return;
+	        }
+	        // For returning the main target through the API
+	        this.mainTarget = null;
+	        // Initialise
+	        this.init();
+	    }
+
+	    // Take element with 'wr-container' class and create the scene based on it
+
+
+	    _createClass(Light, [{
+	        key: 'init',
+	        value: function init() {
+	            // Create the light object
+	            this.createLight();
+	            // Create point light
+	            this.createPointLight();
+	            // Add the light to the scene
+	            this.addScene();
+	        }
+	    }, {
+	        key: 'createLight',
+	        value: function createLight() {
+	            // Create the main light object
+	            this.light = new THREE.Mesh(new THREE.SphereGeometry(1, 5, 5), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+	            // Set the main object
+	            this.mainTarget = this.light;
+	        }
+	    }, {
+	        key: 'createPointLight',
+	        value: function createPointLight() {
+	            this.pointLight = new THREE.PointLight(0xffffff, 10, 800);
+	            this.light.add(this.pointLight);
+	        }
+	    }, {
+	        key: 'addScene',
+	        value: function addScene() {
+	            var scene = _api2.default.get().getScene();
+	            if (!scene) {
+	                _compileError2.default.sceneNotFound();
+	            }
+	            scene.add(this.light);
+	        }
+	    }], [{
+	        key: 'compile',
+	        value: function compile(el) {
+	            // Remove element from the scene if it is already there
+	            var scene = _api2.default.get().getScene();
+	            if (scene && el.vTarget) {
+	                scene.remove(el.vTarget.mainTarget);
+	            }
+	            // Remove any previous references if exist (for recompiling)
+	            if (el.vTarget) {
+	                delete el.vTarget;
+	            }
+	            // Instantiate scene object and attach it to the element 
+	            el.vTarget = new Light(el);
+	        }
+	    }]);
+
+	    return Light;
+	}();
+
+	exports.default = Light;
 	module.exports = exports['default'];
 
 /***/ }

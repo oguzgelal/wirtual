@@ -10,6 +10,10 @@ module.exports = function (grunt) {
           footer: '\n})();'
         },
         src: [
+          // Configurations
+          "src/config/webvr-config.js",
+          "src/config/meta-config.js",
+          "src/config/css-config.js",
           // Dependencies
           "node_modules/es6-promise/dist/es6-promise.js",
           "node_modules/three/three.js",

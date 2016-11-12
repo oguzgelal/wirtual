@@ -7,7 +7,8 @@
     "start": "npm run build",
     "build": "rm -rf dist/; webpack --progress --colors --mode=build; grunt attach-vendors; grunt serve;",
     "dev": "webpack --progress --colors --watch --mode=dev",
-    "test": "mocha --compilers js:babel-core/register --colors -w ./test/*.spec.js"
+    "test": "mocha --compilers js:babel-core/register --colors -w ./test/*.spec.js",
+    "demo": "cp dist/wirtual.js demo/; mv demo/wirtual.js demo/wirtual-$(date +%d-%b-%Y_%H-%M-%S).js;"
   },
   "devDependencies": {
     "babel": "6.3.13",

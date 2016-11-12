@@ -9,6 +9,8 @@ export default class Scene {
         this.el = el;
         // Make sure DOM representation exists
         if (!this.el.dTarget){ CompileError.dTargetNotFound('scene'); return; }
+        // For returning the main target through the API
+        this.mainTarget = null;
         // Initialise
         this.init();
     }
@@ -47,6 +49,7 @@ export default class Scene {
     // Create the scene
     createScene() {
         this.scene = new THREE.Scene();
+        this.mainTarget = this.scene; 
     }
 
     // Create camera with default options
@@ -163,14 +166,12 @@ export default class Scene {
 
     attachRenderLoop(){
         let self = this;
-        let renderLoopRunnable = (timestamp) => {
+        Api.get()._attachRunnable(self.el.id, 'scene_update', (timestamp, timestampDelta) => {
             // Update camera position with latest input values
             self.vrControls.update();
             // Render the scene using the WebVR manager
             self.vrManager.render(self.scene, self.perspectiveCamera, timestamp);
-        };
-
-        Api.get().attachRenderLoopRunnable('scene_update', renderLoopRunnable);
+        });
     }
 
 }

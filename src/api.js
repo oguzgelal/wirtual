@@ -3,7 +3,6 @@ import Utils from './utils';
 export default class Api {
 
     constructor(settings) {
-
         this.settings = settings;
         this.scene = null;
         this.domRoot = null;
@@ -35,10 +34,30 @@ export default class Api {
     _setRootElementID(wid) { this.domRoot = wid; }
     _getRootElementID() { return this.domRoot; }
 
+    // Return render loop runnable functions
+    _getRenderLoopRunnables(){ return this.renderLoopRunnables; }
+
+    _getWidByID(id) {
+        let el = document.getElementById(id);
+        if (el){ return el.dataset.wid; }
+        return null;
+    }
+
+    // Get element with the 'id' attribute (NOT wid)
+    getElementByID(id){
+        let wid = this._getWidByID(id);
+        let dataEl = this._getElement(wid);
+        // Return the main threejs object (not internal objects)
+        if (dataEl && dataEl.vTarget && dataEl.vTarget.mainTarget){
+            return dataEl.vTarget.mainTarget;
+        }
+        return null;
+    }
+    // Get the root element
     getRootElement(){
         return this._getElement(this._getRootElementID());
     }
-
+    // Get the active scene
     getScene(){
         var rootElement = this.getRootElement();
         if (!rootElement){ return null; }
@@ -46,7 +65,24 @@ export default class Api {
         return rootElement.vTarget.scene; 
     }
 
-    attachRenderLoopRunnable(runnableName, runnable){ this.renderLoopRunnables[runnableName] = runnable; }
-    detachRenderLoopRunnable(runnableName){ this.renderLoopRunnables[runnableName] = null; }
-    getRenderLoopRunnables(){ return this.renderLoopRunnables; }
+    // Attach runnable to an element through wid
+    _attachRunnable(wid, runnableName, runnable){
+        let el = this._getElement(wid);
+        if (el && typeof runnable === "function"){
+            if (!el.runnables){ el.runnables = {}; }
+            el.runnables[runnableName] = runnable;
+        }
+    }
+
+    // Attach runnable to an element using the id attribute (not wid)
+    attachRunnable(id, runnableName, runnable){
+        let wid = this._getWidByID(id);
+        if (wid){ this._attachRunnable(wid, runnableName, runnable); }
+    }
+
+    // Attach a function to run on every render loop
+    attachGlobalRunnable(runnableName, runnable){ this.renderLoopRunnables[runnableName] = runnable; }
+    // Detach a function - useful when an element is removed from DOM
+    detachGlobalRunnable(runnableName){ this.renderLoopRunnables[runnableName] = null; }
+    
 }

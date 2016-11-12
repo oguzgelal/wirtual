@@ -2,6 +2,8 @@ import Api from '../api';
 import CompileError from '../errors/compileError';
 import Utils from '../utils';
 
+import Spin from '../properties/spin'
+
 export default class Sphere {
 
     constructor(el) {
@@ -11,6 +13,8 @@ export default class Sphere {
         if (!this.el.dTarget){ CompileError.dTargetNotFound('sphere'); return; }
         // Set default detail level for spheres
         this.defaultDetail = 25;
+        // For returning the main target through the API
+        this.mainTarget = null;
         // Initialise
         this.init();
     }
@@ -19,7 +23,7 @@ export default class Sphere {
     static compile(el) {
         // Remove element from the scene if it is already there
         let scene = Api.get().getScene();
-        if (scene && el.vTarget){ scene.remove(el.vTarget.sphere); }
+        if (scene && el.vTarget){ scene.remove(el.vTarget.mainTarget); }
         // Remove any previous references if exist (for recompiling)
         if (el.vTarget){ delete el.vTarget; }
         // Instantiate scene object and attach it to the element 
@@ -39,6 +43,8 @@ export default class Sphere {
                 this.setSpherePosition();
                 // Add sphere to scene
                 this.addScene();
+                // Attach runnables
+                this.attachRenderLoop();
             });
         });
     }
@@ -100,6 +106,8 @@ export default class Sphere {
     createSphere(){
         // Create the sphere
         this.sphere = new THREE.Mesh(this.sphereGeometry, this.sphereMaterial);
+        // Set the main target
+        this.mainTarget = this.sphere; 
     }
     
     setSpherePosition(){
@@ -126,7 +134,8 @@ export default class Sphere {
     }
 
     attachRenderLoop(){
-
+        // Utilise spin if set
+        Spin.init(this.el);
     }
 
 }
