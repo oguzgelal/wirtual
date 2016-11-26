@@ -43,6 +43,7 @@
   "author": "Oguz Gelal",
   "license": "MIT",
   "dependencies": {
-    "webvr-boilerplate": "^0.3.8"
+    "three": "^0.82.1",
+    "webvr-boilerplate": "^0.4.9"
   }
 }

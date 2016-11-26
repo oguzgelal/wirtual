@@ -14,6 +14,7 @@ export default class CompileError extends Error {
     static depthNotValid() { throw new CompileError('\'wr-depth-<int>\' could not be parsed.'); }
     static axisNotValid() { throw new CompileError('\'wr-axis-<degrees>\' could not be parsed.'); }
     static levelNotValid() { throw new CompileError('\'wr-level-<int>\' could not be parsed.'); }
-    static sphereSizeNotDefined() { throw new CompileError('\'data-size\' attribute must be set for \'wr-sphere\'.'); }
     static sceneNotFound() { throw new CompileError('Trying to add an element to scene, but scene not found.'); }
+    static noEmojiType() { throw new CompileError('Emoji type for \'wr-emoji\' is not set.'); }
+    static invalidEmojiType(type) { throw new CompileError('Emoji type \''+type+'\' for \'wr-emoji\' is invalid.'); }
 }

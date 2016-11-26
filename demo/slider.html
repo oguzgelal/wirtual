@@ -1,0 +1,82 @@
+<html>
+	<head><title>Demo</title></head>
+	<body>
+		<!-- Container -->
+		<div class="wr-container" 
+			data-brightness="medium" 
+			data-skybox="assets/skybox/space" 
+			data-skybox-format="png">
+
+		</div>
+
+		<script src="wirtual.js"></script>
+
+		<script>
+
+            function SlideBar (minVal, maxVal, currentVal, lengthCursor, materialCursor, lengthSlide, materialSlide){
+                this._lengthCursor = lengthCursor;
+                this._cursorMaterial = materialCursor;
+                this._lengthSlide = lengthSlide;
+                this._slideMaterial = materialSlide;
+                this._minVal = minVal;
+                this._maxVal = maxVal;
+                this._defaultVal = currentVal;
+                this.createCursor = function(){
+                    var curs = new THREE.CylinderGeometry(0.1, 0.1, this._lengthCursor, 32);
+                    var mesh = new THREE.Mesh(curs, this._cursorMaterial);
+                    if (this._defaultVal > ((this._maxVal + this._minVal) / 2)){
+                        mesh.position.y += (this._defaultVal - (this._maxVal - this._minVal) / 2) *
+                            ((this._lengthSlide - this._lengthCursor) / (this._maxVal - this._minVal));
+                    } else if (this._defaultVal < ((this._maxVal + this._minVal) / 2)){
+                        mesh.position.y -= (this._defaultVal - (this._maxVal - this._minVal) / 2) *
+                            ((this._lengthSlide - this._lengthCursor) / (this._maxVal - this._minVal));
+                    }
+                    return mesh;
+                };
+                this.createSlide = function(){
+                    var slider = new THREE.CylinderGeometry(0.01, 0.01, this._lengthSlide, 32);
+                    return new THREE.Mesh(slider, this._slideMaterial);
+                };
+                this.incValue = function(value){
+                    if ((this._defaultVal + value >= this._minVal) && (this._defaultVal + value <= this._maxVal)) {
+                        this._defaultVal += value;
+                        this._cursor.position.y -= value * ((this._lengthSlide - this._lengthCursor) / (this._maxVal - this._minVal));
+                    }
+                };
+                this.setValueTo = function(value) {
+                    if (this._defaultVal > ((this._maxVal + this._minVal) / 2)){
+                        this._cursor.position.y = (value - (this._maxVal - this._minVal) / 2) *
+                            ((this._lengthSlide - this._lengthCursor) / (this._maxVal - this._minVal));
+                    } else if (this._defaultVal < ((this._maxVal + this._minVal) / 2)){
+                        this._cursor.position.y = -(value - (this._maxVal - this._minVal) / 2) *
+                            ((this._lengthSlide - this._lengthCursor) / (this._maxVal - this._minVal));
+                    }
+                };
+                this.getValue = function(){
+                    return this._defaultVal;
+                };
+                this.getGroup = function() {
+                    return this._group;
+                };
+                this._group = new THREE.Group();
+                this._cursor = this.createCursor();
+                this._group.add(this._cursor);
+                this._group.add(this.createSlide());
+                this._group.rotation.z += Math.PI / 2;
+            }
+
+			document.addEventListener("DOMContentLoaded", function(event) {
+				if (Wirtual){
+                    var sliderMaterial = new THREE.MeshBasicMaterial({color: 0x2194ce});
+                    var slideMaterial = new THREE.MeshBasicMaterial({color: 0x96002c});
+                    var slider = new SlideBar(0, 100, 30, 30, sliderMaterial, 50, slideMaterial);
+                    var scene = Wirtual.getScene();
+                    if (scene){ scene.add(slider._group); }
+                    else { alert("scene not initiated yet."); }
+			    }
+			});
+		</script>
+
+	</body>
+
+</html>

@@ -46,7 +46,7 @@ export default class Light {
     }
 
     createPointLight(){
-        this.pointLight = new THREE.PointLight(0xffffff, 10, 800);
+        this.pointLight = new THREE.PointLight(0xffffff, 4, 800);
         this.light.add(this.pointLight);
     }
 

@@ -4,15 +4,21 @@ import Utils from '../utils';
 
 import Spin from '../properties/spin'
 
-export default class Sphere {
+export default class Emoji { 
 
     constructor(el) {
         // Pointer to the parent
         this.el = el;
         // Make sure DOM representation exists
-        if (!this.el.dTarget){ CompileError.dTargetNotFound('sphere'); return; }
+        if (!this.el.dTarget){ CompileError.dTargetNotFound('emoji'); return; }
         // Set default detail level for spheres
         this.defaultDetail = 25;
+        // Emoji files
+        this.emojis = {
+            'smile': 'smile.jpg',
+            'tongue': 'tongue.jpg',
+            'mock': 'mock.jpg'
+        };
         // For returning the main target through the API
         this.mainTarget = null;
         // Initialise
@@ -27,7 +33,7 @@ export default class Sphere {
         // Remove any previous references if exist (for recompiling)
         if (el.vTarget){ delete el.vTarget; }
         // Instantiate scene object and attach it to the element 
-        el.vTarget = new Sphere(el);
+        el.vTarget = new Emoji(el);
     }
 
     // Sphere creation is being chained by callbacks because they have to be
@@ -38,9 +44,9 @@ export default class Sphere {
             // Create material
             this.createSphereMaterial(() => {
                 // Create sphere
-                this.createSphere();
+                this.createEmoji();
                 // Set sphere position
-                this.setSpherePosition();
+                this.setEmojiPosition();
                 // Add sphere to scene
                 this.addScene();
                 // Attach runnables
@@ -62,35 +68,35 @@ export default class Sphere {
     createSphereMaterial(callback){
         let self = this;
         // Sphere texture cover set
-        if (self.el.dTarget.dataset && self.el.dTarget.dataset.cover){
+        if (self.el.dTarget.dataset && self.el.dTarget.dataset.smiley){
+            if (!self.emojis[self.el.dTarget.dataset.smiley]){
+                CompileError.invalidEmojiType(self.el.dTarget.dataset.smiley);
+                return;
+            }
+            // Set the path of the emoji
+            let path = self.emojis[self.el.dTarget.dataset.smiley];
+            if (self.el.dTarget.dataset.path && self.el.dTarget.dataset.path!==""){
+                path = self.el.dTarget.dataset.path + "/" + path;
+            }
             // Load texture image
-            self.loadTexture(self.el.dTarget.dataset.cover,
+            self.loadTexture(path,
             // Got texture reference back from the method
             (texture) => {
                 Utils.log(texture);
                 // Create the material with the texture
+                let alpha = 1, beta = 0.5, gamma = 1;
+                let diffuseColor = new THREE.Color().setHSL(alpha, 0.5, gamma * 0.5);
                 self.sphereMaterial = new THREE.MeshLambertMaterial({
                     map: texture,
-                    overdraw: 0.5
+                    color: diffuseColor,
+					reflectivity: beta
                 });
 
                 callback();
             });
         }
-        // Sphere texture covered not set, create lambert material with color
-        else {
-            // Set color to a random color
-            let colorHex = '#'+(Math.random()*0xFFFFFF<<0).toString(16);
-            let color = new THREE.Color(colorHex);
-            // If color is specified via data attribute, set color to it
-            if (self.el.dTarget.dataset && self.el.dTarget.dataset.color){
-                color = new THREE.Color(self.el.dTarget.dataset.color);
-            }
-            // Create Lambert material with the color
-            self.sphereMaterial = new THREE.MeshLambertMaterial({ color: color });
-            // Invoke the callback
-            callback();
-        }
+        // Emoji type not set
+        else { CompileError.noEmojiType(); }
     }
 
     loadTexture(cover, callback){
@@ -101,14 +107,14 @@ export default class Sphere {
         });
     }
 
-    createSphere(){
+    createEmoji(){
         // Create the sphere
         this.sphere = new THREE.Mesh(this.sphereGeometry, this.sphereMaterial);
         // Set the main target
         this.mainTarget = this.sphere; 
     }
     
-    setSpherePosition(){
+    setEmojiPosition(){
         // Set default grid system (in case payload not found)
         let depth = 50, axis = 0, level = 0;
         // Fetch grid system variables from element payload

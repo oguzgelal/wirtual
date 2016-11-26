@@ -6,29 +6,65 @@
 			data-brightness="medium" 
 			data-skybox="assets/skybox/space" 
 			data-skybox-format="png">
-			<!-- Z: Distance from the camera (wr-depth-0 would be the eye of the user) -->
-			<div class="wr-depth-40">
-				<!-- X: Axis around the user -->
-				<!-- (wr-axis-0 is right in front of user) -->
-				<!-- (wr-axis-90 would be on the right of user) -->
-				<!-- (wr-axis--90 would be on the left of user) -->
-				<div class="wr-axis-0">
-					<!-- Y: Height of the component -->
-					<!-- (wr-level-0 is the users level) -->
-					<!-- (wr-level-200 is 200 unit above user) -->
-					<!-- (wr-level--200 is 200 unit below user) -->
-					<div class="wr-level-0">
-						<!-- Define a sphere and cover with earh skin -->
-						<div class="wr-sphere" id="earth"
-							data-spin="0.1"
-							data-spin-direction="right"
-							data-size="20"
-							data-cover="assets/covers/earth.jpg">
-						</div>
+
+			<div class="wr-depth-70">
+				<div class="wr-level-0">
+					<div class="wr-axis-0">
+						<div id="textEl" class="wr-text"
+							data-text="Testing"
+							data-size="10"
+							data-depth="5"
+							data-curve-segments="3"
+							data-bevel-thickness="1"
+							data-bevel-size="1"
+							data-rotation="0"></div>
 					</div>
 				</div>
 			</div>
 
+			<div class="wr-depth-40">
+				<div class="wr-axis-0">
+					<div class="wr-level-0"> 
+
+						<!-- Sphere 
+						<div class="wr-sphere" id="earth"
+							data-spin="0.1"
+							data-spin-direction="right"
+							data-cover="assets/covers/earth.jpg">
+						</div>
+						-->
+					</div>
+				</div>
+
+				<div class="wr-level-0">
+					<div class="wr-axis-170">
+						<!-- Emoji -->
+						<div class="wr-emoji"
+							data-size="10"
+							data-path="assets/emoji"
+							data-smiley="mock">
+						</div>
+					</div>
+					<div class="wr-axis-200">
+						<!-- Emoji -->
+						<div class="wr-emoji"
+							data-size="10"
+							data-path="assets/emoji"
+							data-smiley="tongue">
+						</div>
+					</div>
+					<div class="wr-axis-230">
+						<!-- Emoji -->
+						<div class="wr-emoji"
+							data-size="10"
+							data-path="assets/emoji"
+							data-smiley="smile">
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<!-- Create light sources and animate using the JS API -->
 			<div class="wr-light" id="orbit1"></div>
 			<div class="wr-light" id="orbit2"></div>
 		</div>
@@ -38,11 +74,12 @@
 		<script>
 			document.addEventListener("DOMContentLoaded", function(event) {
 				if (Wirtual){
+
 				Wirtual.attachGlobalRunnable('orbits_move', function(timestamp, timestampDelta){
 					var coef = timestamp / 1500;
 					var spherePosX = 0, spherePosY = 0, spherePosZ = 0;
 
-					var sphere = Wirtual.getElementByID('earth');
+					var sphere = Wirtual.getElementByID('textEl');
 					if (sphere) {
 						spherePosX = sphere.position.x;
 						spherePosY = sphere.position.y;
@@ -64,6 +101,7 @@
 						orbitLight2.position.z = spherePosZ - Math.sin(coef * 3.2) * 23.4;	
 					}
 				});
+
 			}
 			});
 		</script>

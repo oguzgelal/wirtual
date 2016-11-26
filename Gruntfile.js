@@ -16,7 +16,7 @@ module.exports = function (grunt) {
           "src/config/css-config.js",
           // Dependencies
           "node_modules/es6-promise/dist/es6-promise.js",
-          "node_modules/three/three.js",
+          "node_modules/three/build/three.min.js",
           "node_modules/three/examples/js/controls/VRControls.js",
           "node_modules/three/examples/js/effects/VREffect.js",
           "node_modules/webvr-polyfill/build/webvr-polyfill.js",

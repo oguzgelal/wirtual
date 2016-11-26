@@ -4,7 +4,9 @@ import Api from './api';
 
 import Scene from './components/scene';
 import Sphere from './components/sphere';
+import Emoji from './components/emoji';
 import Light from './components/light';
+import Text from './components/text';
 
 export default class Compiler {
 
@@ -196,14 +198,16 @@ export default class Compiler {
         }
 
         // SPHERE ---
-
-        // 'wr-sphere' - Parse sphere and add it to the scene
         if (currentElementClassName.match('wr-sphere')) { Sphere.compile(currentElement); }
 
-        // LIGHT ---
+        // EMOJI ---
+        if (currentElementClassName.match('wr-emoji')) { Emoji.compile(currentElement); }
 
-        // 'wr-sphere' - Parse sphere and add it to the scene
+        // LIGHT ---
         if (currentElementClassName.match('wr-light')) { Light.compile(currentElement); }
+
+        // TEXT ---
+        if (currentElementClassName.match('wr-text')) { Text.compile(currentElement); }
 
 
         /* -------------------------- */
