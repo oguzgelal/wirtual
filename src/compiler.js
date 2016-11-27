@@ -7,6 +7,7 @@ import Sphere from './components/sphere';
 import Emoji from './components/emoji';
 import Light from './components/light';
 import Text from './components/text';
+import HtmlRenderer from './components/html-renderer';
 
 export default class Compiler {
 
@@ -209,11 +210,14 @@ export default class Compiler {
         // TEXT ---
         if (currentElementClassName.match('wr-text')) { Text.compile(currentElement); }
 
+        // RENDER ---
+        if (currentElementClassName.match('wr-render')) { HtmlRenderer.compile(currentElement); }
+
 
         /* -------------------------- */
 
         // Call recursion for all the children
-        if (currentElement.children) {
+        if (!currentElementClassName.match('wr-render') && currentElement.children) {
             for (let childID of currentElement.children) {
                 self.compile(childID, payload, recursionLevel + 1, null);
             }

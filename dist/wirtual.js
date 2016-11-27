@@ -2103,6 +2103,259 @@ l.Projector=function(){console.error("THREE.Projector has been moved to /example
 this.domElement=document.createElementNS("http://www.w3.org/1999/xhtml","canvas");this.clear=function(){};this.render=function(){};this.setClearColor=function(){};this.setSize=function(){}};Object.defineProperty(l,"__esModule",{value:!0});Object.defineProperty(l,"AudioContext",{get:function(){return l.getAudioContext()}})});
 ;
 /**
+ * Based on http://www.emagix.net/academic/mscs-project/item/camera-sync-with-css3-and-webgl-threejs
+ * @author mrdoob / http://mrdoob.com/
+ */
+
+THREE.CSS3DObject = function ( element ) {
+
+	THREE.Object3D.call( this );
+
+	this.element = element;
+	this.element.style.position = 'absolute';
+
+	this.addEventListener( 'removed', function ( event ) {
+
+		if ( this.element.parentNode !== null ) {
+
+			this.element.parentNode.removeChild( this.element );
+
+		}
+
+	} );
+
+};
+
+THREE.CSS3DObject.prototype = Object.create( THREE.Object3D.prototype );
+THREE.CSS3DObject.prototype.constructor = THREE.CSS3DObject;
+
+THREE.CSS3DSprite = function ( element ) {
+
+	THREE.CSS3DObject.call( this, element );
+
+};
+
+THREE.CSS3DSprite.prototype = Object.create( THREE.CSS3DObject.prototype );
+THREE.CSS3DSprite.prototype.constructor = THREE.CSS3DSprite;
+
+//
+
+THREE.CSS3DRenderer = function () {
+
+	console.log( 'THREE.CSS3DRenderer', THREE.REVISION );
+
+	var _width, _height;
+	var _widthHalf, _heightHalf;
+
+	var matrix = new THREE.Matrix4();
+
+	var cache = {
+		camera: { fov: 0, style: '' },
+		objects: {}
+	};
+
+	var domElement = document.createElement( 'div' );
+	domElement.style.overflow = 'hidden';
+
+	domElement.style.WebkitTransformStyle = 'preserve-3d';
+	domElement.style.MozTransformStyle = 'preserve-3d';
+	domElement.style.oTransformStyle = 'preserve-3d';
+	domElement.style.transformStyle = 'preserve-3d';
+
+	this.domElement = domElement;
+
+	var cameraElement = document.createElement( 'div' );
+
+	cameraElement.style.WebkitTransformStyle = 'preserve-3d';
+	cameraElement.style.MozTransformStyle = 'preserve-3d';
+	cameraElement.style.oTransformStyle = 'preserve-3d';
+	cameraElement.style.transformStyle = 'preserve-3d';
+
+	domElement.appendChild( cameraElement );
+
+	this.setClearColor = function () {};
+
+	this.getSize = function() {
+
+		return {
+			width: _width,
+			height: _height
+		};
+
+	};
+
+	this.setSize = function ( width, height ) {
+
+		_width = width;
+		_height = height;
+
+		_widthHalf = _width / 2;
+		_heightHalf = _height / 2;
+
+		domElement.style.width = width + 'px';
+		domElement.style.height = height + 'px';
+
+		cameraElement.style.width = width + 'px';
+		cameraElement.style.height = height + 'px';
+
+	};
+
+	var epsilon = function ( value ) {
+
+		return Math.abs( value ) < Number.EPSILON ? 0 : value;
+
+	};
+
+	var getCameraCSSMatrix = function ( matrix ) {
+
+		var elements = matrix.elements;
+
+		return 'matrix3d(' +
+			epsilon( elements[ 0 ] ) + ',' +
+			epsilon( - elements[ 1 ] ) + ',' +
+			epsilon( elements[ 2 ] ) + ',' +
+			epsilon( elements[ 3 ] ) + ',' +
+			epsilon( elements[ 4 ] ) + ',' +
+			epsilon( - elements[ 5 ] ) + ',' +
+			epsilon( elements[ 6 ] ) + ',' +
+			epsilon( elements[ 7 ] ) + ',' +
+			epsilon( elements[ 8 ] ) + ',' +
+			epsilon( - elements[ 9 ] ) + ',' +
+			epsilon( elements[ 10 ] ) + ',' +
+			epsilon( elements[ 11 ] ) + ',' +
+			epsilon( elements[ 12 ] ) + ',' +
+			epsilon( - elements[ 13 ] ) + ',' +
+			epsilon( elements[ 14 ] ) + ',' +
+			epsilon( elements[ 15 ] ) +
+		')';
+
+	};
+
+	var getObjectCSSMatrix = function ( matrix ) {
+
+		var elements = matrix.elements;
+
+		return 'translate3d(-50%,-50%,0) matrix3d(' +
+			epsilon( elements[ 0 ] ) + ',' +
+			epsilon( elements[ 1 ] ) + ',' +
+			epsilon( elements[ 2 ] ) + ',' +
+			epsilon( elements[ 3 ] ) + ',' +
+			epsilon( - elements[ 4 ] ) + ',' +
+			epsilon( - elements[ 5 ] ) + ',' +
+			epsilon( - elements[ 6 ] ) + ',' +
+			epsilon( - elements[ 7 ] ) + ',' +
+			epsilon( elements[ 8 ] ) + ',' +
+			epsilon( elements[ 9 ] ) + ',' +
+			epsilon( elements[ 10 ] ) + ',' +
+			epsilon( elements[ 11 ] ) + ',' +
+			epsilon( elements[ 12 ] ) + ',' +
+			epsilon( elements[ 13 ] ) + ',' +
+			epsilon( elements[ 14 ] ) + ',' +
+			epsilon( elements[ 15 ] ) +
+		')';
+
+	};
+
+	var renderObject = function ( object, camera ) {
+
+		if ( object instanceof THREE.CSS3DObject ) {
+
+			var style;
+
+			if ( object instanceof THREE.CSS3DSprite ) {
+
+				// http://swiftcoder.wordpress.com/2008/11/25/constructing-a-billboard-matrix/
+
+				matrix.copy( camera.matrixWorldInverse );
+				matrix.transpose();
+				matrix.copyPosition( object.matrixWorld );
+				matrix.scale( object.scale );
+
+				matrix.elements[ 3 ] = 0;
+				matrix.elements[ 7 ] = 0;
+				matrix.elements[ 11 ] = 0;
+				matrix.elements[ 15 ] = 1;
+
+				style = getObjectCSSMatrix( matrix );
+
+			} else {
+
+				style = getObjectCSSMatrix( object.matrixWorld );
+
+			}
+
+			var element = object.element;
+			var cachedStyle = cache.objects[ object.id ];
+
+			if ( cachedStyle === undefined || cachedStyle !== style ) {
+
+				element.style.WebkitTransform = style;
+				element.style.MozTransform = style;
+				element.style.oTransform = style;
+				element.style.transform = style;
+
+				cache.objects[ object.id ] = style;
+
+			}
+
+			if ( element.parentNode !== cameraElement ) {
+
+				cameraElement.appendChild( element );
+
+			}
+
+		}
+
+		for ( var i = 0, l = object.children.length; i < l; i ++ ) {
+
+			renderObject( object.children[ i ], camera );
+
+		}
+
+	};
+
+	this.render = function ( scene, camera ) {
+
+		var fov = 0.5 / Math.tan( THREE.Math.degToRad( camera.getEffectiveFOV() * 0.5 ) ) * _height;
+
+		if ( cache.camera.fov !== fov ) {
+
+			domElement.style.WebkitPerspective = fov + "px";
+			domElement.style.MozPerspective = fov + "px";
+			domElement.style.oPerspective = fov + "px";
+			domElement.style.perspective = fov + "px";
+
+			cache.camera.fov = fov;
+
+		}
+
+		scene.updateMatrixWorld();
+
+		if ( camera.parent === null ) camera.updateMatrixWorld();
+
+		camera.matrixWorldInverse.getInverse( camera.matrixWorld );
+
+		var style = "translate3d(0,0," + fov + "px)" + getCameraCSSMatrix( camera.matrixWorldInverse ) +
+			" translate3d(" + _widthHalf + "px," + _heightHalf + "px, 0)";
+
+		if ( cache.camera.style !== style ) {
+
+			cameraElement.style.WebkitTransform = style;
+			cameraElement.style.MozTransform = style;
+			cameraElement.style.oTransform = style;
+			cameraElement.style.transform = style;
+
+			cache.camera.style = style;
+
+		}
+
+		renderObject( scene, camera );
+
+	};
+
+};
+;
+/**
  * @author dmarcos / https://github.com/dmarcos
  * @author mrdoob / http://mrdoob.com
  */
@@ -9427,6 +9680,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _text2 = _interopRequireDefault(_text);
 
+	var _htmlRenderer = __webpack_require__(11);
+
+	var _htmlRenderer2 = _interopRequireDefault(_htmlRenderer);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -9725,10 +9982,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	                _text2.default.compile(currentElement);
 	            }
 
+	            // RENDER ---
+	            if (currentElementClassName.match('wr-render')) {
+	                _htmlRenderer2.default.compile(currentElement);
+	            }
+
 	            /* -------------------------- */
 
 	            // Call recursion for all the children
-	            if (currentElement.children) {
+	            if (!currentElementClassName.match('wr-render') && currentElement.children) {
 	                var _iteratorNormalCompletion2 = true;
 	                var _didIteratorError2 = false;
 	                var _iteratorError2 = undefined;
@@ -10148,6 +10410,34 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	            return rootElement.vTarget.scene;
 	        }
+	        // Get the renderer
+
+	    }, {
+	        key: 'getRenderer',
+	        value: function getRenderer() {
+	            var rootElement = this.getRootElement();
+	            if (!rootElement) {
+	                return null;
+	            }
+	            if (!rootElement.vTarget) {
+	                return null;
+	            }
+	            return rootElement.vTarget.renderer;
+	        }
+	        // Get the camera
+
+	    }, {
+	        key: 'getCamera',
+	        value: function getCamera() {
+	            var rootElement = this.getRootElement();
+	            if (!rootElement) {
+	                return null;
+	            }
+	            if (!rootElement.vTarget) {
+	                return null;
+	            }
+	            return rootElement.vTarget.perspectiveCamera;
+	        }
 
 	        // Attach runnable to an element through wid
 
@@ -10464,9 +10754,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'addRenderers',
 	        value: function addRenderers() {
-	            // Initiate the WebGL renderers and set the pixel ratio
+	            // Initiate the WebGL renderer
 	            this.renderer = new THREE.WebGLRenderer();
 	            this.renderer.setPixelRatio(window.devicePixelRatio);
+	            // Initiate the CSS3D renderer
+	            this.cssRenderer = new THREE.CSS3DRenderer();
+	            this.cssRenderer.setSize(window.innerWidth, window.innerHeight);
+	            this.cssRenderer.domElement.style.position = 'absolute';
+	            this.cssRenderer.domElement.style.top = 0;
 	        }
 	    }, {
 	        key: 'appendDOM',
@@ -10478,6 +10773,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	            // Append the canvas element to DOM
 	            document.body.appendChild(this.renderer.domElement);
+	            document.body.appendChild(this.cssRenderer.domElement);
 	        }
 	    }, {
 	        key: 'initVR',
@@ -10517,6 +10813,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	                self.vrControls.update();
 	                // Render the scene using the WebVR manager
 	                self.vrManager.render(self.scene, self.perspectiveCamera, timestamp);
+	                // Render the scene with CSS3D renderer
+	                self.cssRenderer.render(self.scene, self.perspectiveCamera);
 	            });
 	        }
 	    }], [{
@@ -11324,6 +11622,116 @@ return /******/ (function(modules) { // webpackBootstrap
 	}();
 
 	exports.default = Text;
+	module.exports = exports['default'];
+
+/***/ },
+/* 11 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _api = __webpack_require__(3);
+
+	var _api2 = _interopRequireDefault(_api);
+
+	var _compileError = __webpack_require__(4);
+
+	var _compileError2 = _interopRequireDefault(_compileError);
+
+	var _utils = __webpack_require__(2);
+
+	var _utils2 = _interopRequireDefault(_utils);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var HtmlRenderer = function () {
+	    function HtmlRenderer(el) {
+	        _classCallCheck(this, HtmlRenderer);
+
+	        // Pointer to the parent
+	        this.el = el;
+	        // Make sure DOM representation exists
+	        if (!this.el.dTarget) {
+	            _compileError2.default.dTargetNotFound('text');return;
+	        }
+	        // For returning the main target through the API
+	        this.mainTarget = null;
+	        // Initialise
+	        this.init();
+	    }
+
+	    // Take element with 'wr-container' class and create the scene based on it
+
+
+	    _createClass(HtmlRenderer, [{
+	        key: 'init',
+	        value: function init() {
+
+	            // Get position
+	            // Set default grid system (in case payload not found)
+	            var depth = 50,
+	                axis = 0,
+	                level = 0;
+	            // Fetch grid system variables from element payload
+	            if (this.el.payload) {
+	                if (this.el.payload.depth) {
+	                    depth = this.el.payload.depth;
+	                }
+	                if (this.el.payload.axis) {
+	                    axis = this.el.payload.axis;
+	                }
+	                if (this.el.payload.level) {
+	                    level = this.el.payload.level;
+	                }
+	            }
+	            // Calculate elements x y z coordinates based on grid system variables
+	            var pos = _utils2.default.calculatePosition(depth, axis, level);
+
+	            // create cdd3d object
+	            var cssObject = new THREE.CSS3DObject(this.el.dTarget);
+
+	            // reference the same position and rotation
+	            cssObject.position.x = pos.x;
+	            cssObject.position.y = pos.y;
+	            cssObject.position.z = pos.z;
+	            cssObject.rotation.y = pos.rotation * -1;
+
+	            // get data
+	            var scene = _api2.default.get().getScene();
+	            if (!scene) {
+	                _compileError2.default.sceneNotFound();
+	            }
+	            scene.add(cssObject);
+	        }
+	    }], [{
+	        key: 'compile',
+	        value: function compile(el) {
+	            // Remove element from the scene if it is already there
+	            var scene = _api2.default.get().getScene();
+	            if (scene && el.vTarget) {
+	                scene.remove(el.vTarget.mainTarget);
+	            }
+	            // Remove any previous references if exist (for recompiling)
+	            if (el.vTarget) {
+	                delete el.vTarget;
+	            }
+	            // Instantiate scene object and attach it to the element 
+	            el.vTarget = new HtmlRenderer(el);
+	        }
+	    }]);
+
+	    return HtmlRenderer;
+	}();
+
+	exports.default = HtmlRenderer;
 	module.exports = exports['default'];
 
 /***/ }

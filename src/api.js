@@ -64,6 +64,20 @@ export default class Api {
         if (!rootElement.vTarget){ return null; } 
         return rootElement.vTarget.scene; 
     }
+    // Get the renderer
+    getRenderer(){
+        var rootElement = this.getRootElement();
+        if (!rootElement){ return null; }
+        if (!rootElement.vTarget){ return null; } 
+        return rootElement.vTarget.renderer; 
+    }
+    // Get the camera
+    getCamera(){
+        var rootElement = this.getRootElement();
+        if (!rootElement){ return null; }
+        if (!rootElement.vTarget){ return null; } 
+        return rootElement.vTarget.perspectiveCamera; 
+    }
 
     // Attach runnable to an element through wid
     _attachRunnable(wid, runnableName, runnable){
