@@ -6,5 +6,6 @@ css.innerHTML = "body {\
     padding: 0px !important;\
     width: 100% !important;\
     height: 100% !important;\
-}";
+    }\
+    .wr-container{ display: none; }";
 document.body.appendChild(css);

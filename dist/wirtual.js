@@ -104,7 +104,8 @@ css.innerHTML = "body {\
     padding: 0px !important;\
     width: 100% !important;\
     height: 100% !important;\
-}";
+    }\
+    .wr-container{ display: none; }";
 document.body.appendChild(css);;
 /*!
  * @overview es6-promise - a tiny implementation of Promises/A+.
@@ -9737,6 +9738,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        key: 'mark',
 	        value: function mark(wid, recursionLevel, callback) {
 	            var elementCurrentDOM = this.getCurrentState(wid);
+	            if (!elementCurrentDOM) {
+	                return;
+	            }
 	            // Recurse throuh children
 	            var children = elementCurrentDOM.children;
 	            for (var i = 0; i < children.length; i++) {
@@ -9782,23 +9786,18 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    }, {
 	        key: 'scan',
-	        value: function (_scan) {
-	            function scan(_x) {
-	                return _scan.apply(this, arguments);
-	            }
-
-	            scan.toString = function () {
-	                return _scan.toString();
-	            };
-
-	            return scan;
-	        }(function (wid) {
+	        value: function scan(wid) {
 	            var self = this;
 	            // If wid not set, start from the root
 	            if (!wid) {
 	                wid = _api2.default.get()._getRootElementID();
 	            }
 	            var elementStored = this.getStoredState(wid);
+	            if (wid) {}
+	            //Utils.log('Scanning: ');
+	            //Utils.log(wid);
+	            //Utils.log(elementStored);
+
 	            // If the children count changes, something might be unmarked
 	            // Stop the heartbeat and call mark starting from the current element
 	            if (this.hasChildrenChange(wid)) {
@@ -9809,7 +9808,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    // Start heartbeat again
 	                    self.stopHeartbeat = false;
 	                    // Continue scanning from the same element
-	                    scan(wid);
+	                    self.scan(wid);
 	                });
 	            }
 	            if (!this.stopHeartbeat) {
@@ -9829,6 +9828,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	                                var childID = _step.value;
 
 	                                if (self.hasChange(childID)) {
+	                                    var child = elementStored.children[childID];
+	                                    // If one of the children is a renderable, just render 
+	                                    var child = this.getStoredState(childID);
+	                                    if (child.dTarget.className.match('wr-render')) {
+	                                        self.initCompile(childID);
+	                                        break;
+	                                    }
 	                                    changedChildrenCount += 1;
 	                                    changedChildren = childID;
 	                                }
@@ -9848,6 +9854,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                            }
 	                        }
 	                    }
+
 	                    // Only one child has change, step in.
 	                    if (changedChildrenCount === 1 && changedChildren !== -1) {
 	                        self.scan(changedChildren);
@@ -9860,7 +9867,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        }
 	                }
 	            }
-	        })
+	        }
 
 	        // Initiate the compilation process
 
@@ -9908,6 +9915,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                _utils2.default.log('Element DOM target (WID: ' + wid + ') not found');return;
 	            }
 	            var currentElementClassName = currentElement.dTarget.className;
+	            var currentElementTagName = currentElement.dTarget.tagName;
 
 	            // If payload is null, initiate it with an empty object and sync it
 	            if (!payload) {
@@ -9990,7 +9998,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            /* -------------------------- */
 
 	            // Call recursion for all the children
-	            if (!currentElementClassName.match('wr-render') && currentElement.children) {
+	            if (currentElement.children) {
 	                var _iteratorNormalCompletion2 = true;
 	                var _didIteratorError2 = false;
 	                var _iteratorError2 = undefined;
@@ -10064,6 +10072,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var elementStored = this.getStoredState(wid);
 	            // Get current state of the DOM element
 	            var elementCurrentDOM = this.getCurrentState(wid);
+	            // Renderable always should be compiled
+	            if (elementStored.dTarget.className.match('wr-render')) {
+	                return true;
+	            }
 	            // DOM change if hashes are not the same
 	            return elementStored.hash !== this.hash(elementCurrentDOM);
 	        }
@@ -10125,6 +10137,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'hash',
 	        value: function hash(el) {
+	            // Return hash
+	            if (!el) {
+	                return '';
+	            }
+	            if (!el.outerHTML) {
+	                return '';
+	            }
 	            return el.outerHTML
 	            // Remove all white spaces
 	            .replace(/\s/g, '').replace(/\n/g, '').replace(/\t/g, '')
@@ -10132,7 +10151,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            .replace(/<!--[\s\S]*?-->/g, '')
 	            // Remove 'data-wid' properties
 	            // ie. Parents are marked and stored before its children - causes hash missmatch
-	            .replace(/data\-wid=(\"|\')(.*?)(\"|\')/gi, '').trim();
+	            .replace(/data\-wid=(\"|\')(.*?)(\"|\')/gi, '')
+	            // Remove any DOM elements with `wrhashignore` tags, including the element with the class itself.
+	            .replace(/<wrhashignore((.|\n)*)>((.|\n)*)<\/wrhashignore>/gi).trim();
 	        }
 	    }, {
 	        key: 'renderLoop',
@@ -11696,13 +11717,53 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var pos = _utils2.default.calculatePosition(depth, axis, level);
 
 	            // create cdd3d object
-	            var cssObject = new THREE.CSS3DObject(this.el.dTarget);
+
+	            // Fetch content from the stash
+	            if (this.el.stash) {
+	                this.el.dTarget.innerHTML = this.el.stash;
+	            }
+
+	            // Create an el with <wrhashignore></wrhashignore>
+	            // which will be detached form the change detection
+	            var replacementDiv = document.createElement('wrhashignore');
+	            replacementDiv.className = this.el.dTarget.className;
+	            replacementDiv.id = this.el.dTarget.id;
+	            // Copy contents of original renderable to <wrhashignore></wrhashignore>
+	            replacementDiv.innerHTML = this.el.dTarget.innerHTML;
+	            // Replace renderable with populated <wrhashignore></wrhashignore>
+	            this.el.dTarget.parentNode.insertBefore(replacementDiv, this.el.dTarget);
+	            this.el.dTarget.parentNode.removeChild(this.el.dTarget);
+	            this.el.dTarget = replacementDiv;
+
+	            console.log('*-*-*-*-*-*');
+	            console.log(replacementDiv);
+	            console.log(this.el.dTarget);
+
+	            // Wrap the contents in a container div
+	            var containerDiv = document.createElement('DIV');
+	            containerDiv.innerHTML = this.el.dTarget.innerHTML;
+
+	            console.log(containerDiv);
+
+	            // Save the content to stash
+	            if (!this.el.stash) {
+	                this.el.stash = '';
+	            }
+	            this.el.stash = this.el.dTarget.innerHTML;
+
+	            this.el.dTarget.innerHTML = '';
+	            this.el.dTarget.appendChild(containerDiv);
+
+	            // Create the object.
+	            var cssObject = new THREE.CSS3DObject(containerDiv);
 
 	            // reference the same position and rotation
 	            cssObject.position.x = pos.x;
 	            cssObject.position.y = pos.y;
 	            cssObject.position.z = pos.z;
 	            cssObject.rotation.y = pos.rotation * -1;
+
+	            this.mainTarget = cssObject;
 
 	            // get data
 	            var scene = _api2.default.get().getScene();
@@ -11719,6 +11780,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            if (scene && el.vTarget) {
 	                scene.remove(el.vTarget.mainTarget);
 	            }
+	            // Remove DOM element
+	            console.log('RENDEREDDDDDD');
+	            //if (el.dTarget && el.dTarget.parentNode){ el.dTarget.parentNode.removeChild(el.dTarget); }
 	            // Remove any previous references if exist (for recompiling)
 	            if (el.vTarget) {
 	                delete el.vTarget;

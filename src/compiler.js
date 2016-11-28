@@ -48,6 +48,7 @@ export default class Compiler {
     // Mark (stamp and store) every DOM element
     mark(wid, recursionLevel, callback) {
         let elementCurrentDOM = this.getCurrentState(wid);
+        if (!elementCurrentDOM){ return; }
         // Recurse throuh children
         let children = elementCurrentDOM.children;
         for (let i = 0; i < children.length; i++) {
@@ -88,6 +89,11 @@ export default class Compiler {
         // If wid not set, start from the root
         if (!wid) { wid = Api.get()._getRootElementID(); }
         let elementStored = this.getStoredState(wid);
+        if (wid){
+            //Utils.log('Scanning: ');
+            //Utils.log(wid);
+            //Utils.log(elementStored);
+        }
         // If the children count changes, something might be unmarked
         // Stop the heartbeat and call mark starting from the current element
         if (this.hasChildrenChange(wid)) {
@@ -98,7 +104,7 @@ export default class Compiler {
                 // Start heartbeat again
                 self.stopHeartbeat = false;
                 // Continue scanning from the same element
-                scan(wid);
+                self.scan(wid);
             });
         }
         if (!this.stopHeartbeat) {
@@ -110,11 +116,20 @@ export default class Compiler {
                 if (elementStored.children) {
                     for (let childID of elementStored.children) {
                         if (self.hasChange(childID)) {
+                            var child = elementStored.children[childID];
+                            // If one of the children is a renderable, just render 
+                            var child = this.getStoredState(childID);
+                            if (child.dTarget.className.match('wr-render')){
+                                self.initCompile(childID);
+                                break;
+                            }
                             changedChildrenCount += 1;
                             changedChildren = childID;
                         }
                     }
                 }
+
+                
                 // Only one child has change, step in.
                 if (changedChildrenCount === 1 && changedChildren !== -1) { self.scan(changedChildren); }
                 // Children has no change -> Change is within element 
@@ -157,6 +172,7 @@ export default class Compiler {
         if (!currentElement){ Utils.log('Element (WID: '+wid+') not found'); return; }
         if (!currentElement.dTarget){ Utils.log('Element DOM target (WID: '+wid+') not found'); return; }
         var currentElementClassName = currentElement.dTarget.className;
+        var currentElementTagName = currentElement.dTarget.tagName;
 
         // If payload is null, initiate it with an empty object and sync it
         if (!payload){ payload = {}; }
@@ -217,7 +233,7 @@ export default class Compiler {
         /* -------------------------- */
 
         // Call recursion for all the children
-        if (!currentElementClassName.match('wr-render') && currentElement.children) {
+        if (currentElement.children) {
             for (let childID of currentElement.children) {
                 self.compile(childID, payload, recursionLevel + 1, null);
             }
@@ -260,6 +276,8 @@ export default class Compiler {
         let elementStored = this.getStoredState(wid);
         // Get current state of the DOM element
         let elementCurrentDOM = this.getCurrentState(wid);
+        // Renderable always should be compiled
+        if (elementStored.dTarget.className.match('wr-render')){ return true; }
         // DOM change if hashes are not the same
         return elementStored.hash !== this.hash(elementCurrentDOM);
     }
@@ -304,6 +322,9 @@ export default class Compiler {
     }
 
     hash(el) {
+        // Return hash
+        if (!el){ return ''; }
+        if (!el.outerHTML){ return ''; }
         return el.outerHTML
             // Remove all white spaces
             .replace(/\s/g, '')
@@ -314,6 +335,8 @@ export default class Compiler {
             // Remove 'data-wid' properties
             // ie. Parents are marked and stored before its children - causes hash missmatch
             .replace(/data\-wid=(\"|\')(.*?)(\"|\')/gi, '')
+            // Remove any DOM elements with `wrhashignore` tags, including the element with the class itself.
+            .replace(/<wrhashignore((.|\n)*)>((.|\n)*)<\/wrhashignore>/gi)
             .trim();
     }
 

@@ -7,45 +7,22 @@
 			data-skybox="assets/skybox/space" 
 			data-skybox-format="png">
 
-			<!-- Text -->
-			<!--
-			<div class="wr-depth-70">
-				<div class="wr-level-0">
-					<div class="wr-axis-0">
-						<div id="textEl" class="wr-text"
-							data-text="Testing"
-							data-size="10"
-							data-depth="5"
-							data-curve-segments="3"
-							data-bevel-thickness="1"
-							data-bevel-size="1"
-							data-rotation="0"></div>
-					</div>
-				</div>
-			</div>
-			-->
-
-			<div class="wr-depth-100">
+			<div class="wr-depth-35">
 				<div class="wr-axis-0">
 					<div class="wr-level-0">
 
-						<div class="wr-render" id="renderedContent">
-							<b style="color: white;">Alert</b>
-							<input id="alertbox" type="text">
-							<button onclick="alert(document.getElementById('alertbox').value); document.getElementById('awesome').style.display = 'block';">Run</button>
-							<img id="awesome" src="http://orig14.deviantart.net/c6aa/f/2014/303/5/d/awesome_face_by_zorogleb-d84ne3x.jpg" style="display: none; width: 40px; margin: auto; margin-top: 10px;">
-						</div>
-
-						<!-- Sphere 
+						<!-- Sphere -->
 						<div class="wr-sphere" id="earth"
 							data-spin="0.1"
 							data-spin-direction="right"
 							data-cover="assets/covers/earth.jpg">
 						</div>
-						-->
+						
 					</div>
 				</div>
+			</div>
 
+			<div class="wr-depth-70">
 				<div class="wr-level-0">
 					<div class="wr-axis-170">
 						<!-- Emoji -->
@@ -74,6 +51,7 @@
 				</div>
 			</div>
 			
+			
 			<!-- Create light sources and animate using the JS API -->
 			<div class="wr-light" id="orbit1"></div>
 			<div class="wr-light" id="orbit2"></div>
@@ -89,7 +67,7 @@
 					var coef = timestamp / 1500;
 					var spherePosX = 0, spherePosY = 0, spherePosZ = 0;
 
-					var sphere = Wirtual.getElementByID('renderedContent');
+					var sphere = Wirtual.getElementByID('earth');
 					if (sphere) {
 						spherePosX = sphere.position.x;
 						spherePosY = sphere.position.y;
