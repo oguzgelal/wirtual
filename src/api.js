@@ -1,4 +1,5 @@
 import Utils from './utils';
+import WirtualKeyboard from './builtin/keyboard';
 
 export default class Api {
 
@@ -8,6 +9,7 @@ export default class Api {
         this.domRoot = null;
         this.dom = {};
         this.renderLoopRunnables = {};
+        this.keyboard = new WirtualKeyboard();
     }
 
     // Returns the active instance of the API

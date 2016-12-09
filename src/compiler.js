@@ -119,7 +119,7 @@ export default class Compiler {
                             var child = elementStored.children[childID];
                             // If one of the children is a renderable, just render 
                             var child = this.getStoredState(childID);
-                            if (child.dTarget.className.match('wr-render')){
+                            if (child.dTarget.tagName.match('WR-RENDER')){
                                 self.initCompile(childID);
                                 break;
                             }
@@ -227,7 +227,7 @@ export default class Compiler {
         if (currentElementClassName.match('wr-text')) { Text.compile(currentElement); }
 
         // RENDER ---
-        if (currentElementClassName.match('wr-render')) { HtmlRenderer.compile(currentElement); }
+        if (currentElementTagName.match('WR-RENDER')) { HtmlRenderer.compile(currentElement); }
 
 
         /* -------------------------- */
@@ -335,8 +335,8 @@ export default class Compiler {
             // Remove 'data-wid' properties
             // ie. Parents are marked and stored before its children - causes hash missmatch
             .replace(/data\-wid=(\"|\')(.*?)(\"|\')/gi, '')
-            // Remove any DOM elements with `wrhashignore` tags, including the element with the class itself.
-            .replace(/<wrhashignore((.|\n)*)>((.|\n)*)<\/wrhashignore>/gi)
+            // Remove any DOM elements with `wr-render` tags, including the element with the class itself.
+            .replace(/<wr-render((.|\n)*)>((.|\n)*)<\/wr-render>/gi)
             .trim();
     }
 

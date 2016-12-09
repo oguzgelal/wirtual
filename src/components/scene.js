@@ -159,6 +159,7 @@ export default class Scene {
         this.perspectiveCamera.updateProjectionMatrix();
         // Set VR aspect ratio
         this.vrEffect.setSize(width, height);
+        this.cssRenderer.setSize(width, height);
     }
 
     onWindowResize(){

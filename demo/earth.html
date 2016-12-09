@@ -1,40 +1,28 @@
 <html>
 	<head><title>Demo</title></head>
 	<body>
-
 		<!-- Container -->
 		<div class="wr-container" 
 			data-brightness="medium" 
 			data-skybox="assets/skybox/space" 
 			data-skybox-format="png">
 
-			<div class="wr-depth-100" id="renderDepth">
-				<div class="wr-axis-0" id="renderAxis">
-					<div class="wr-level-20" id="renderLevel">
+			<div class="wr-depth-35">
+				<div class="wr-axis-0">
+					<div class="wr-level-0">
+
+						<!-- Sphere -->
+						<div class="wr-sphere" id="earth"
+							data-spin="0.1"
+							data-spin-direction="right"
+							data-cover="assets/covers/earth.jpg">
+						</div>
 						
-						<wr-render class="wr-render" id="renderedContent">
-							<b style="color: white;">Text</b>
-							<input id="alertbox" type="text">
-							<button onclick="fire()">Run</button>
-							<img id="awesome" src="http://orig14.deviantart.net/c6aa/f/2014/303/5/d/awesome_face_by_zorogleb-d84ne3x.jpg" style="display: none; width: 40px; margin: auto; margin-top: 10px;">
-						</wr-render>
-
-					</div>
-
-					<div class="wr-level--30">
-
-						<div id="textEl" class="wr-text"
-										data-text="Testing"
-										data-size="20"
-										data-depth="5"
-										data-curve-segments="3"
-										data-bevel-thickness="1"
-										data-bevel-size="1"
-										data-rotation="0"></div>
-
 					</div>
 				</div>
+			</div>
 
+			<div class="wr-depth-70">
 				<div class="wr-level-0">
 					<div class="wr-axis-170">
 						<!-- Emoji -->
@@ -46,7 +34,7 @@
 					</div>
 					<div class="wr-axis-200">
 						<!-- Emoji -->
-						<div class="wr-emoji" id="emoji2"
+						<div class="wr-emoji"
 							data-size="10"
 							data-path="assets/emoji"
 							data-smiley="tongue">
@@ -63,6 +51,7 @@
 				</div>
 			</div>
 			
+			
 			<!-- Create light sources and animate using the JS API -->
 			<div class="wr-light" id="orbit1"></div>
 			<div class="wr-light" id="orbit2"></div>
@@ -71,22 +60,6 @@
 		<script src="wirtual.js"></script>
 
 		<script>
-
-            function fire(){
-                var txt = document.getElementById('alertbox').value;
-                document.getElementById('alertbox').value = '';
-				var el = document.getElementById('textEl');
-				if (txt==='big'){
-					el.dataset.size += 1;
-				}
-				else if (txt==='small'){
-					el.dataset.size -= 1;
-				}
-				else {
-					el.dataset.text = txt;
-				}        
-            }
-
 			document.addEventListener("DOMContentLoaded", function(event) {
 				if (Wirtual){
 
@@ -94,7 +67,7 @@
 					var coef = timestamp / 1500;
 					var spherePosX = 0, spherePosY = 0, spherePosZ = 0;
 
-					var sphere = Wirtual.getElementByID('emoji2');
+					var sphere = Wirtual.getElementByID('earth');
 					if (sphere) {
 						spherePosX = sphere.position.x;
 						spherePosY = sphere.position.y;
