@@ -107,10 +107,18 @@ export default class Scene {
             // Create the cube that will hold the skybox images 
             let skyGeometry = new THREE.CubeGeometry(5000, 5000, 5000);
             // Generate the skybox material array
+            let skyPathsArray = [
+                skyboxPath+'/'+skyboxName+'_px.'+skyboxFormat,
+                skyboxPath+'/'+skyboxName+'_nx.'+skyboxFormat,
+                skyboxPath+'/'+skyboxName+'_py.'+skyboxFormat,
+                skyboxPath+'/'+skyboxName+'_ny.'+skyboxFormat,
+                skyboxPath+'/'+skyboxName+'_pz.'+skyboxFormat,
+                skyboxPath+'/'+skyboxName+'_nz.'+skyboxFormat
+            ];
             let skyMaterialArray = [];
-            for (let i = 1; i < 7; i++) {
+            for (let i = 0; i < skyPathsArray.length; i++) {
                 skyMaterialArray.push(new THREE.MeshBasicMaterial({
-                    map: THREE.ImageUtils.loadTexture(skyboxPath + '/' +  skyboxName + i + '.' + skyboxFormat),
+                    map: THREE.ImageUtils.loadTexture(skyPathsArray[i]),
                     side: THREE.BackSide
                 }));
             }

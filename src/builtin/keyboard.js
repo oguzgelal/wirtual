@@ -128,7 +128,7 @@ export default class WirtualKeyboard {
                 -o-animation-duration: .1s;
             }
             .keyboard{
-                width:90%;
+                width:50%;
                 background-color: #111;
                 margin: 0px auto;
                 border-radius: 9px;
