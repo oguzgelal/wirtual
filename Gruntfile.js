@@ -20,8 +20,13 @@ module.exports = function (grunt) {
           "node_modules/three/examples/js/renderers/CSS3DRenderer.js",
           "node_modules/three/examples/js/controls/VRControls.js",
           "node_modules/three/examples/js/effects/VREffect.js",
+          "node_modules/three/examples/js/loaders/ColladaLoader.js",
+          "node_modules/three/examples/js/loaders/OBJLoader.js",
+          "node_modules/three/examples/js/loaders/MTLLoader.js",
           "node_modules/webvr-polyfill/build/webvr-polyfill.js",
           "node_modules/webvr-boilerplate/build/webvr-manager.js",
+          "node_modules/jquery/dist/jquery.min.js",
+          "node_modules/bootstrap/dist/js/bootstrap.min.js",
           // Source codes
           "dist/tmp/webpack-out.js"
         ],

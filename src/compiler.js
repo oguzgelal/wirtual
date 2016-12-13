@@ -7,6 +7,7 @@ import Sphere from './components/sphere';
 import Emoji from './components/emoji';
 import Light from './components/light';
 import Text from './components/text';
+import ModelRenderer from './components/model-renderer';
 import HtmlRenderer from './components/html-renderer';
 
 export default class Compiler {
@@ -226,7 +227,10 @@ export default class Compiler {
         // TEXT ---
         if (currentElementClassName.match('wr-text')) { Text.compile(currentElement); }
 
-        // RENDER ---
+        // MODEL ---
+        if (currentElementClassName.match('wr-model')) { ModelRenderer.compile(currentElement); }
+
+        // HTML RENDER ---
         if (currentElementTagName.match('WR-RENDER')) { HtmlRenderer.compile(currentElement); }
 
 
