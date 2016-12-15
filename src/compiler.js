@@ -120,7 +120,7 @@ export default class Compiler {
                             var child = elementStored.children[childID];
                             // If one of the children is a renderable, just render 
                             var child = this.getStoredState(childID);
-                            if (child.dTarget.tagName.match('WR-RENDER')){
+                            if (child.dTarget.tagName.match('WR-RENDER') || child.dTarget.tagName.match('WR-COMPONENT')){
                                 self.initCompile(childID);
                                 break;
                             }
@@ -233,6 +233,9 @@ export default class Compiler {
         // HTML RENDER ---
         if (currentElementTagName.match('WR-RENDER')) { HtmlRenderer.compile(currentElement); }
 
+        // HTML BACKED COMPONENTS ---
+        if (currentElementTagName.match('WR-COMPONENT')) { HtmlRenderer.compile(currentElement); }
+
 
         /* -------------------------- */
 
@@ -281,7 +284,7 @@ export default class Compiler {
         // Get current state of the DOM element
         let elementCurrentDOM = this.getCurrentState(wid);
         // Renderable always should be compiled
-        if (elementStored.dTarget.className.match('wr-render')){ return true; }
+        if (elementStored.dTarget.className.match('wr-render') || elementStored.dTarget.className.match('wr-component')){ return true; }
         // DOM change if hashes are not the same
         return elementStored.hash !== this.hash(elementCurrentDOM);
     }
@@ -339,8 +342,9 @@ export default class Compiler {
             // Remove 'data-wid' properties
             // ie. Parents are marked and stored before its children - causes hash missmatch
             .replace(/data\-wid=(\"|\')(.*?)(\"|\')/gi, '')
-            // Remove any DOM elements with `wr-render` tags, including the element with the class itself.
+            // Remove any DOM elements with `wr-render` and `wr-component` tags, including the element with the class itself.
             .replace(/<wr-render((.|\n)*)>((.|\n)*)<\/wr-render>/gi)
+            .replace(/<wr-component((.|\n)*)>((.|\n)*)<\/wr-component>/gi)
             .trim();
     }
 

@@ -16,7 +16,6 @@
 							<b style="color: white;">Text</b>
 							<input id="alertbox" type="text">
 							<button onclick="fire()">Run</button>
-							<img id="awesome" src="http://orig14.deviantart.net/c6aa/f/2014/303/5/d/awesome_face_by_zorogleb-d84ne3x.jpg" style="display: none; width: 40px; margin: auto; margin-top: 10px;">
 						</wr-render>
 
 					</div>
@@ -24,43 +23,19 @@
 					<div class="wr-level--30">
 
 						<div id="textEl" class="wr-text"
-										data-text="Testing"
-										data-size="20"
-										data-depth="5"
-										data-curve-segments="3"
-										data-bevel-thickness="1"
-										data-bevel-size="1"
-										data-rotation="0"></div>
+							data-text="Testing"
+							data-size="20"
+							data-depth="5"
+							data-curve-segments="3"
+							data-bevel-thickness="1"
+							data-bevel-size="1"
+							data-rotation="0">
+						</div>
 
 					</div>
 				</div>
 
-				<div class="wr-level-0">
-					<div class="wr-axis-170">
-						<!-- Emoji -->
-						<div class="wr-emoji"
-							data-size="10"
-							data-path="assets/emoji"
-							data-smiley="mock">
-						</div>
-					</div>
-					<div class="wr-axis-200">
-						<!-- Emoji -->
-						<div class="wr-emoji" id="emoji2"
-							data-size="10"
-							data-path="assets/emoji"
-							data-smiley="tongue">
-						</div>
-					</div>
-					<div class="wr-axis-230">
-						<!-- Emoji -->
-						<div class="wr-emoji"
-							data-size="10"
-							data-path="assets/emoji"
-							data-smiley="smile">
-						</div>
-					</div>
-				</div>
+				
 			</div>
 			
 			<!-- Create light sources and animate using the JS API -->
@@ -87,38 +62,6 @@
 				}        
             }
 
-			document.addEventListener("DOMContentLoaded", function(event) {
-				if (Wirtual){
-
-				Wirtual.attachGlobalRunnable('orbits_move', function(timestamp, timestampDelta){
-					var coef = timestamp / 1500;
-					var spherePosX = 0, spherePosY = 0, spherePosZ = 0;
-
-					var sphere = Wirtual.getElementByID('emoji2');
-					if (sphere) {
-						spherePosX = sphere.position.x;
-						spherePosY = sphere.position.y;
-						spherePosZ = sphere.position.z;
-					}
-					var orbitLight1 = Wirtual.getElementByID('orbit1');
-					var orbitLight2 = Wirtual.getElementByID('orbit2');
-
-					if (orbitLight1){
-						// move orbit light 2
-						orbitLight1.position.x = spherePosX - Math.sin(coef * 2.2) * 26.5;
-						orbitLight1.position.y = spherePosY + Math.cos(coef * 3.2) * 24.3;
-						orbitLight1.position.z = spherePosZ + Math.sin(coef * 3.1) * 22.9;
-					}
-					if (orbitLight2){
-						// move orbit light 3
-						orbitLight2.position.x = spherePosX - Math.sin(coef * 2.4) * 26.5;
-						orbitLight2.position.y = spherePosY + Math.cos(coef * 3.2) * 23.8;
-						orbitLight2.position.z = spherePosZ - Math.sin(coef * 3.2) * 23.4;	
-					}
-				});
-
-			}
-			});
 		</script>
 
 	</body>

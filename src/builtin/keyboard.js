@@ -220,7 +220,9 @@ export default class WirtualKeyboard {
         
         // On focus
         document.addEventListener('focus',function(e){
-            self.show(e.target);
+            if (e.target.tagName==="TEXTAREA" || (e.target.tagName==="INPUT" && e.target.type==="text")){
+                self.show(e.target);
+            }
         }, true);
 
         // On close button
@@ -253,9 +255,7 @@ export default class WirtualKeyboard {
         for (var i = 0; i < keys.length; i++) {
             keys[i].addEventListener('click', function(e){ self.keyClicked(e); });
         }
-
     }
-
     keyClicked(e){
         var self = this;
         if (e && e.target && e.target.dataset){
@@ -270,8 +270,6 @@ export default class WirtualKeyboard {
             else{ self.characterClicked(btn); }
         }
     }
-
-    
     characterClicked(btn){
         if (this.ctrlOn){
             /* Do things with CTRL */
@@ -301,12 +299,9 @@ export default class WirtualKeyboard {
     backspaceClicked(){
         this.activeTarget.value = this.activeTarget.value.slice(0, -1);
     }
-    
-    
     writeCharacter(c){
         this.activeTarget.value += c;
     }
-    
     clearInput(){
         this.activeTarget.value = '';
     }
@@ -346,32 +341,25 @@ export default class WirtualKeyboard {
         this.altOn = false;
         Utils.removeClass(document.getElementById('keyboard-alt-button'), 'active');
     }
-
-
     moveTop(){
         document.getElementById(this.containerID).style.bottom = null;
 		document.getElementById(this.containerID).style.top = "20px";
     }
-
     moveDown(){
         document.getElementById(this.containerID).style.top = null;
 		document.getElementById(this.containerID).style.bottom = "20px";
     }
-
     makeSmall(){
         document.getElementById(this.keyboardID).style.width = "50%";
     }
-
     makeLarge(){
         document.getElementById(this.keyboardID).style.width = "90%";
     }
-
     show(target){
         this.active = true;
         this.activeTarget = target;
         document.getElementById(this.containerID).style.display = "block";
     }
-
     hide(){
         this.active = false;
         this.activeTarget = null;
