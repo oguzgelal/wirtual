@@ -42,7 +42,7 @@ WebVRConfig = {
     // Dirty bindings include: gl.FRAMEBUFFER_BINDING, gl.CURRENT_PROGRAM,
     // gl.ARRAY_BUFFER_BINDING, gl.ELEMENT_ARRAY_BUFFER_BINDING,
     // and gl.TEXTURE_BINDING_2D for texture unit 0.
-    DIRTY_SUBMIT_FRAME_BINDINGS: false, // Default: false.
+    DIRTY_SUBMIT_FRAME_BINDINGS: true, // Default: false.
     
     /*** Webvr-boilerplate configuration ***/
     
@@ -16589,8 +16589,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    self.initHeartbeat();
 	                    // Init the render loop
 	                    self.renderLoop();
-	                    // Attach listeners needed for the HTML Api after compilation complete
-	                    _api2.default.get()._attachListeners();
 	                });
 	            });
 	        }
@@ -17234,116 +17232,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 	    _createClass(Api, [{
-	        key: '_attachListeners',
-
-
-	        /********* HTML API *********/
-
-	        // Initiate listeners needed for the html api
-	        value: function _attachListeners() {
-	            var _this = this;
-
-	            // Listeners - Array of [className - callbackFn] arrays.
-	            // ps. callback functions invoked not to lose scope
-	            var listeners = [['wr-move-up', function (e) {
-	                return _this._posCallback(e, function (elm, target) {
-	                    var delta = elm.dataset.delta || 20;
-	                    target.position.y += parseFloat(delta);
-	                });
-	            }], ['wr-move-down', function (e) {
-	                return _this._posCallback(e, function (elm, target) {
-	                    var delta = elm.dataset.delta || 20;
-	                    target.position.y -= parseFloat(delta);
-	                });
-	            }], ['wr-move-left', function (e) {
-	                return _this._posCallback(e, function (elm, target) {
-	                    var delta = elm.dataset.delta || 20;
-	                    target.position.z += parseFloat(delta);
-	                });
-	            }], ['wr-move-right', function (e) {
-	                return _this._posCallback(e, function (elm, target) {
-	                    var delta = elm.dataset.delta || 20;
-	                    target.position.z -= parseFloat(delta);
-	                });
-	            }], ['wr-move-near', function (e) {
-	                return _this._posCallback(e, function (elm, target) {
-	                    var delta = elm.dataset.delta || 20;
-	                    target.position.x += parseFloat(delta);
-	                });
-	            }], ['wr-move-far', function (e) {
-	                return _this._posCallback(e, function (elm, target) {
-	                    var delta = elm.dataset.delta || 20;
-	                    target.position.x -= parseFloat(delta);
-	                });
-	            }], ['wr-rotate-xup', function (e) {
-	                return _this._posCallback(e, function (elm, target) {
-	                    var delta = elm.dataset.delta || 20;
-	                    target.rotation.x += parseFloat(delta);
-	                });
-	            }], ['wr-rotate-xdown', function (e) {
-	                return _this._posCallback(e, function (elm, target) {
-	                    var delta = elm.dataset.delta || 20;
-	                    target.rotation.x -= parseFloat(delta);
-	                });
-	            }], ['wr-rotate-yup', function (e) {
-	                return _this._posCallback(e, function (elm, target) {
-	                    var delta = elm.dataset.delta || 20;
-	                    target.rotation.y += parseFloat(delta);
-	                });
-	            }], ['wr-rotate-ydown', function (e) {
-	                return _this._posCallback(e, function (elm, target) {
-	                    var delta = elm.dataset.delta || 20;
-	                    target.rotation.y -= parseFloat(delta);
-	                });
-	            }], ['wr-rotate-zup', function (e) {
-	                return _this._posCallback(e, function (elm, target) {
-	                    var delta = elm.dataset.delta || 20;
-	                    target.rotation.z += parseFloat(delta);
-	                });
-	            }], ['wr-rotate-zdown', function (e) {
-	                return _this._posCallback(e, function (elm, target) {
-	                    var delta = elm.dataset.delta || 20;
-	                    target.rotation.z -= parseFloat(delta);
-	                });
-	            }]];
-	            // Init all listeners
-
-	            var _loop = function _loop(li) {
-	                var el = document.getElementsByClassName(listeners[li][0]);
-	                for (var eli = 0; eli < el.length; eli++) {
-	                    el[eli].addEventListener('click', function (e) {
-	                        listeners[li][1](e);
-	                    });
-	                }
-	            };
-
-	            for (var li = 0; li < listeners.length; li++) {
-	                _loop(li);
-	            }
-	        }
-	    }, {
-	        key: '_posCallback',
-	        value: function _posCallback(e, invoke) {
-	            var self = this;
-	            var elm = e.target;
-	            var target = void 0;
-	            // Get desired target element from data-target property of the button
-	            if (elm && elm.dataset.target) {
-	                target = self.getElementByID(elm.dataset.target);
-	            }
-	            if (target) {
-	                try {
-	                    // Invoke desired method for a specified element
-	                    invoke(elm, target);
-	                } catch (e) {
-	                    _utils2.default.log('Position cannot be changed for the specified element.');
-	                }
-	            }
-	        }
-
-	        /********* JS API *********/
-
-	    }, {
 	        key: 'isDebug',
 	        value: function isDebug() {
 	            return this.settings && this.settings.debug;
@@ -18139,8 +18027,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                // Render the scene using the WebVR manager
 	                self.vrManager.render(self.scene, self.perspectiveCamera, timestamp);
 	                // Render the scene with CSS3D renderer
-	                // TODO : How to get cssRenderer rendered by the vrManager ?
-	                self.cssRenderer.render(self.scene, self.perspectiveCamera, timestamp);
+	                self.cssRenderer.render(self.scene, self.perspectiveCamera);
 	            });
 	        }
 	    }], [{

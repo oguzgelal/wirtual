@@ -187,7 +187,8 @@ export default class Scene {
             // Render the scene using the WebVR manager
             self.vrManager.render(self.scene, self.perspectiveCamera, timestamp);
             // Render the scene with CSS3D renderer
-            self.cssRenderer.render(self.scene, self.perspectiveCamera);
+            // TODO : How to get cssRenderer rendered by the vrManager ?
+            self.cssRenderer.render(self.scene, self.perspectiveCamera, timestamp);
         });
     }
 

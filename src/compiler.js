@@ -42,6 +42,8 @@ export default class Compiler {
                 self.initHeartbeat();
                 // Init the render loop
                 self.renderLoop();
+                // Attach listeners needed for the HTML Api after compilation complete
+                Api.get()._attachListeners();
             });
         });
     }

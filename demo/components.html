@@ -5,109 +5,226 @@
 		<!-- Container -->
 		<div class="wr-container" 
 			data-brightness="medium" 
-			data-skybox="assets/skybox/hws" 
+			data-skybox="assets/skybox/space" 
 			data-skybox-format="png">
 
             <div class="wr-depth-300">
                 <div class="wr-axis-0">
                     <div class="wr-level-0">
+                        
                         <wr-component>
-                            <form class="form-horizontal">
+                            <form class="form-horizontal" style="width: 250px; color: white !important;">
                                 <fieldset>
-                                    
                                     <div class="form-group">
-                                        <label class="col-lg-4 control-label">Text Field</label>
-                                        <div class="col-lg-8"><input type="text" class="form-control"></div>
+                                        <input type="text" class="form-control" placeholder="Text Box">
                                     </div>
-
                                     <div class="form-group">
-                                        <label class="col-lg-4 control-label">Textarea</label>
-                                        <div class="col-lg-8"><textarea class="form-control" rows="3"></textarea></div>
+                                        <textarea class="form-control" rows="3" placeholder="Textarea"></textarea>
                                     </div>
-
                                     <div class="form-group">
-                                        <label class="col-lg-4 control-label">Radio Buttons</label>
-                                        <div class="col-lg-8">
-                                            <div class="radio">
-                                                <label><input type="radio" name="optionsRadios" checked="">Option one</label>
-                                            </div>
-                                            <div class="radio">
-                                                <label><input type="radio" name="optionsRadios" value="option2">Option two</label>
-                                            </div>
-                                        </div>
+                                        <div class="radio"><label><input type="radio" name="optionsRadios" checked="">Option one</label></div>
+                                        <div class="radio"><label><input type="radio" name="optionsRadios" value="option2">Option two</label></div>
                                     </div>
-
                                     <div class="form-group">
-                                        <label class="col-lg-4 control-label">Checkboxes</label>
-                                        <div class="col-lg-8">
-                                            <div class="checkbox">
-                                                <label><input type="checkbox" name="optionsRadios" checked="">Option one</label>
-                                            </div>
-                                            <div class="checkbox">
-                                                <label><input type="checkbox" name="optionsRadios" value="option2">Option two</label>
-                                            </div>
-                                        </div>
+                                        <div class="checkbox"><label><input type="checkbox" name="optionsRadios" checked="">Option one</label></div>
+                                        <div class="checkbox"><label><input type="checkbox" name="optionsRadios" value="option2">Option two</label></div>
                                     </div>
-
                                     <div class="form-group">
-                                        <label for="select" class="col-lg-4 control-label">Selects</label>
-                                        <div class="col-lg-8">
-                                            <select class="form-control" id="select">
+                                        <select class="form-control">
                                             <option>1</option>
                                             <option>2</option>
                                             <option>3</option>
                                             <option>4</option>
                                             <option>5</option>
-                                            </select>
-                                        </div>
+                                        </select>
                                     </div>
-
                                 </fieldset>
                             </form>
                         </wr-component>
+
                     </div>
                 </div>
             </div>
 
-			<div class="wr-depth-500">
-                <div class="wr-axis-45">
-                    <div class="wr-level-180">
-						<wr-component>
-                            <button class="wr-button btn btn-lg btn-default">Wirtual</button>
-                            <button class="wr-button btn btn-sm btn-default">Wirtual</button>
-                            <button class="wr-button btn btn-xs btn-default">Wirtual</button>
-                        </wr-component>
-					</div>
-                    <div class="wr-level-100">
-						<wr-component>
-                            <button class="wr-button btn btn-lg btn-danger">Wirtual</button>
-                            <button class="wr-button btn btn-sm btn-danger">Wirtual</button>
-                            <button class="wr-button btn btn-xs btn-danger">Wirtual</button>
-                        </wr-component>
-					</div>
+			<div class="wr-depth-400">
+                <div class="wr-axis-60">
                     <div class="wr-level-20">
-						<wr-component>
-                            <button class="wr-button btn btn-lg btn-success">Wirtual</button>
-                            <button class="wr-button btn btn-sm btn-success">Wirtual</button>
-                            <button class="wr-button btn btn-xs btn-success">Wirtual</button>
+						
+                        <wr-component>
+                            <div class="col-xs-3 col-xs-offset-3">
+                                <button class="btn btn-default">Wirtual</button><br><br>
+                                <button class="btn btn-primary">Wirtual</button><br><br>
+                                <button class="btn btn-success">Wirtual</button><br><br>
+                                <button class="btn btn-info">Wirtual</button><br><br>
+                                <button class="btn btn-warning">Wirtual</button><br><br>
+                                <button class="btn btn-danger">Wirtual</button><br><br>
+                            </div>
+                            <div class="col-xs-3">
+                                <button class="btn btn-default disabled">Wirtual</button><br><br>
+                                <button class="btn btn-primary disabled">Wirtual</button><br><br>
+                                <button class="btn btn-success disabled">Wirtual</button><br><br>
+                                <button class="btn btn-info disabled">Wirtual</button><br><br>
+                                <button class="btn btn-warning disabled">Wirtual</button><br><br>
+                                <button class="btn btn-danger disabled">Wirtual</button><br><br>
+                            </div>
+                            <div class="col-xs-3">
+                                <button class="btn btn-primary btn-lg">Wirtual</button><br><br>
+                                <button class="btn btn-primary">Wirtual</button><br><br>
+                                <button class="btn btn-primary btn-sm">Wirtual</button><br><br>
+                                <button class="btn btn-primary btn-xs">Wirtual</button><br><br>
+                            </div>
                         </wr-component>
-					</div>
-                    <div class="wr-level--60">
-						<wr-component>
-                            <button class="wr-button btn btn-lg btn-info">Wirtual</button>
-                            <button class="wr-button btn btn-sm btn-info">Wirtual</button>
-                            <button class="wr-button btn btn-xs btn-info">Wirtual</button>
-                        </wr-component>
-					</div>
-                    <div class="wr-level--140">
-						<wr-component>
-                            <button class="wr-button btn btn-lg btn-warning">Wirtual</button>
-                            <button class="wr-button btn btn-sm btn-warning">Wirtual</button>
-                            <button class="wr-button btn btn-xs btn-warning">Wirtual</button>
-                        </wr-component>
+
 					</div>
 				</div>
 			</div>
+            
+            <div class="wr-depth-600">
+                <div class="wr-axis-120">
+                    <div class="wr-level-50">
+                        
+                        <wr-component>
+                            <table class="table table-striped table-hover" style="width: 300px;">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>heading</th>
+                                        <th>heading</th>
+                                        <th>heading</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>content</td>
+                                        <td>content</td>
+                                        <td>content</td>
+                                    </tr>
+                                    <tr class="info">
+                                        <td>3</td>
+                                        <td>content</td>
+                                        <td>content</td>
+                                        <td>content</td>
+                                    </tr>
+                                    <tr class="success">
+                                        <td>4</td>
+                                        <td>content</td>
+                                        <td>content</td>
+                                        <td>content</td>
+                                    </tr>
+                                    <tr class="danger">
+                                        <td>5</td>
+                                        <td>content</td>
+                                        <td>content</td>
+                                        <td>content</td>
+                                    </tr>
+                                    <tr class="warning">
+                                        <td>6</td>
+                                        <td>content</td>
+                                        <td>content</td>
+                                        <td>content</td>
+                                    </tr>
+                                    <tr class="active">
+                                        <td>7</td>
+                                        <td>content</td>
+                                        <td>content</td>
+                                        <td>content</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </wr-component>
+
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="wr-depth-300">
+                <div class="wr-axis--60">
+                    <div class="wr-level-20">
+                        <wr-component>
+                            <div style="width: 200px;">
+                                <div class="alert alert-dismissible alert-warning">
+                                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                                    <strong>Oh snap!</strong> <a href="#" class="alert-link">Change a few things up</a> and try submitting again.
+                                </div>
+                                <div class="alert alert-dismissible alert-danger">
+                                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                                    <strong>Oh snap!</strong> <a href="#" class="alert-link">Change a few things up</a> and try submitting again.
+                                </div>
+                                <div class="alert alert-dismissible alert-success">
+                                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                                    <strong>Well done!</strong> You successfully read <a href="#" class="alert-link">this important alert message</a>.
+                                </div>
+                                <div class="alert alert-dismissible alert-info">
+                                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                                    <strong>Heads up!</strong> This <a href="#" class="alert-link">alert needs your attention</a>, but it's not super important.
+                                </div>
+                            </div>
+                        </wr-component>
+
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="wr-depth-300">
+                <div class="wr-level-0">
+                    
+                    <div class="wr-axis--120">
+                        
+                        <wr-component id="wrThumbs">
+                            <div style="width: 250px; position: relative;">
+                                
+                                <div class="scroll-btns" style="position: absolute; left: -60px; top: 25%;">
+                                    <div style="color: white; text-align: center;">Move</div>
+                                    <button class="btn btn-xs btn-primary wr-move-up" data-target="wrThumbs" data-delta="25" style="width: 55px; display: block; margin-bottom: 5px;">up</button>
+                                    <button class="btn btn-xs btn-primary wr-move-down" data-target="wrThumbs" data-delta="25" style="width: 55px; display: block; margin-bottom: 5px;">down</button>
+                                    <button class="btn btn-xs btn-primary wr-move-left" data-target="wrThumbs" data-delta="25" style="width: 55px; display: block; margin-bottom: 5px;">left</button>
+                                    <button class="btn btn-xs btn-primary wr-move-right" data-target="wrThumbs" data-delta="25" style="width: 55px; display: block; margin-bottom: 5px;">right</button>
+                                    <button class="btn btn-xs btn-primary wr-move-near" data-target="wrThumbs" data-delta="25" style="width: 55px; display: block; margin-bottom: 5px;">near</button>
+                                    <button class="btn btn-xs btn-primary wr-move-far" data-target="wrThumbs" data-delta="25" style="width: 55px; display: block; margin-bottom: 5px;">far</button>
+                                    <div style="color: white; text-align: center;">Rotate</div>
+                                    <button class="btn btn-xs btn-primary wr-rotate-xup" data-target="wrThumbs" data-delta="25" style="width: 55px; display: block; margin-bottom: 5px;">x up</button>
+                                    <button class="btn btn-xs btn-primary wr-rotate-xdown" data-target="wrThumbs" data-delta="25" style="width: 55px; display: block; margin-bottom: 5px;">x down</button>
+                                    <button class="btn btn-xs btn-primary wr-rotate-yup" data-target="wrThumbs" data-delta="25" style="width: 55px; display: block; margin-bottom: 5px;">y up</button>
+                                    <button class="btn btn-xs btn-primary wr-rotate-ydown" data-target="wrThumbs" data-delta="25" style="width: 55px; display: block; margin-bottom: 5px;">y down</button>
+                                    <button class="btn btn-xs btn-primary wr-rotate-zup" data-target="wrThumbs" data-delta="25" style="width: 55px; display: block; margin-bottom: 5px;">z up</button>
+                                    <button class="btn btn-xs btn-primary wr-rotate-zdown" data-target="wrThumbs" data-delta="25" style="width: 55px; display: block; margin-bottom: 5px;">z down</button>
+                                </div>
+                                
+                                <div class="thumbnail">
+                                    <div class="caption">
+                                        <h3>Card Component - With Content</h3>
+                                        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ut maxime aspernatur deserunt assumenda eaque cumque magnam consequuntur necessitatibus rem.</p>
+                                        <p><a href="#" class="btn btn-primary" role="button">Button</a> <a href="#" class="btn btn-default" role="button">Button</a></p>
+                                    </div>
+                                </div>
+                                <div class="thumbnail">
+                                    <img src="http://lorempixel.com/500/500/people/1">
+                                    <div class="caption">
+                                        <h3>Card Component - With Thumb & Content</h3>
+                                        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ut maxime aspernatur deserunt assumenda eaque cumque magnam consequuntur necessitatibus rem.</p>
+                                        <p><a href="#" class="btn btn-primary" role="button">Button</a> <a href="#" class="btn btn-default" role="button">Button</a></p>
+                                    </div>
+                                </div>
+                                <div class="thumbnail">
+                                    <img src="http://lorempixel.com/500/500/people/1">
+                                    <div class="caption">
+                                        <h3>Card Component - With Thumb</h3>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </wr-component>
+                    </div>
+                    <div class="wr-axis--180">
+                        <wr-component>
+                        </wr-component>
+                    </div>
+
+                </div>
+            </div>
 
 		</div>
 
