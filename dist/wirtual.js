@@ -18399,6 +18399,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                (function () {
 	                    // Get main target
 	                    var rotateEl = el.vTarget.mainTarget;
+	                    rotateEl.spin = true;
 	                    // Read the spin speed
 	                    var spinSpeed = parseFloat(el.dTarget.dataset.spin);
 	                    // Set the direction
@@ -18407,7 +18408,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    }
 
 	                    _api2.default.get()._attachRunnable(el.id, 'spin', function (timestamp, timestampDelta) {
-	                        rotateEl.rotation.y += spinSpeed * timestampDelta;
+	                        if (rotateEl.spin) {
+	                            rotateEl.rotation.y += spinSpeed * timestampDelta;
+	                        }
 	                    });
 	                })();
 	            }
@@ -19066,7 +19069,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	            // Set default grid system (in case payload not found)
 	            var depth = 50,
 	                axis = 0,
-	                level = 0;
+	                level = 0,
+	                scale = 1;
+
+	            // Get the scale
+	            if (this.el.dTarget.dataset && this.el.dTarget.dataset.scale) {
+	                scale = parseFloat(this.el.dTarget.dataset.scale);
+	            }
 
 	            // Fetch grid system variables from element payload
 	            if (this.el.payload) {
@@ -19089,6 +19098,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.mainTarget.position.y = pos.y;
 	            this.mainTarget.position.z = pos.z;
 	            this.mainTarget.rotation.y = pos.rotation * -1;
+
+	            // Update the scale
+	            this.mainTarget.scale.x *= scale;
+	            this.mainTarget.scale.y *= scale;
+	            this.mainTarget.scale.z *= scale;
 	        }
 	    }, {
 	        key: 'attachRenderLoop',

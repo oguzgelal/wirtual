@@ -10,7 +10,7 @@ export default class ModelRenderer {
         // Pointer to the parent
         this.el = el;
         // Make sure DOM representation exists
-        if (!this.el.dTarget){ CompileError.dTargetNotFound('model'); return; }
+        if (!this.el.dTarget) { CompileError.dTargetNotFound('model'); return; }
         // For returning the main target through the API
         this.mainTarget = null;
         // Initialise
@@ -21,32 +21,32 @@ export default class ModelRenderer {
     static compile(el) {
         // Remove element from the scene if it is already there
         let scene = Api.get().getScene();
-        if (scene && el.vTarget){ scene.remove(el.vTarget.mainTarget); }
+        if (scene && el.vTarget) { scene.remove(el.vTarget.mainTarget); }
         // Remove DOM element
         //if (el.dTarget && el.dTarget.parentNode){ el.dTarget.parentNode.removeChild(el.dTarget); }
         // Remove any previous references if exist (for recompiling)
-        if (el.vTarget){ delete el.vTarget; }
+        if (el.vTarget) { delete el.vTarget; }
         // Instantiate scene object and attach it to the element 
         el.vTarget = new ModelRenderer(el);
     }
- 
-    init(){
+
+    init() {
         let self = this;
         let scene = Api.get().getScene();
-        if (!scene){ CompileError.sceneNotFound(); }
-        
+        if (!scene) { CompileError.sceneNotFound(); }
+
         let format, path, textureFormat, fullPath, fullTexturePath;
-        if (this.el.dTarget.dataset && this.el.dTarget.dataset.model){ path = this.el.dTarget.dataset.model; }
-        if (this.el.dTarget.dataset && this.el.dTarget.dataset.modelFormat){ format = this.el.dTarget.dataset.modelFormat; }
-        if (this.el.dTarget.dataset && this.el.dTarget.dataset.textureFormat){ textureFormat = this.el.dTarget.dataset.textureFormat; }
-        
-        if (path && format){
-            fullPath = path+'.'+format;
-            fullTexturePath = path+'.mtl';
+        if (this.el.dTarget.dataset && this.el.dTarget.dataset.model) { path = this.el.dTarget.dataset.model; }
+        if (this.el.dTarget.dataset && this.el.dTarget.dataset.modelFormat) { format = this.el.dTarget.dataset.modelFormat; }
+        if (this.el.dTarget.dataset && this.el.dTarget.dataset.textureFormat) { textureFormat = this.el.dTarget.dataset.textureFormat; }
+
+        if (path && format) {
+            fullPath = path + '.' + format;
+            fullTexturePath = path + '.mtl';
         }
-        
+
         // Call collada loader
-        if (format==='dae'){
+        if (format === 'dae') {
             let loader = new THREE.ColladaLoader();
             loader.load(fullPath, function (colladaModel) {
                 self.mainTarget = colladaModel.scene;
@@ -56,11 +56,11 @@ export default class ModelRenderer {
             });
         }
         // Call obj + mtl loader
-        else if (format==='obj'){
+        else if (format === 'obj') {
             let objLoader = new THREE.OBJLoader();
             let mtlLoader = new THREE.MTLLoader();
             // first load the material that will cover the model
-            mtlLoader.load(fullTexturePath, function(materials){
+            mtlLoader.load(fullTexturePath, function (materials) {
                 materials.preload();
                 // now load the model
                 objLoader.setMaterials(materials);
@@ -76,13 +76,16 @@ export default class ModelRenderer {
 
     setPosition() {
         // Set default grid system (in case payload not found)
-        let depth = 50, axis = 0, level = 0;
+        let depth = 50, axis = 0, level = 0, scale = 1;
+
+        // Get the scale
+        if (this.el.dTarget.dataset && this.el.dTarget.dataset.scale) { scale = parseFloat(this.el.dTarget.dataset.scale); }
 
         // Fetch grid system variables from element payload
-        if (this.el.payload){
-            if (this.el.payload.depth){ depth = this.el.payload.depth; }
-            if (this.el.payload.axis){ axis = this.el.payload.axis; }
-            if (this.el.payload.level){ level = this.el.payload.level; }
+        if (this.el.payload) {
+            if (this.el.payload.depth) { depth = this.el.payload.depth; }
+            if (this.el.payload.axis) { axis = this.el.payload.axis; }
+            if (this.el.payload.level) { level = this.el.payload.level; }
         }
 
         // Calculate elements x y z coordinates based on grid system variables
@@ -93,9 +96,14 @@ export default class ModelRenderer {
         this.mainTarget.position.y = pos.y;
         this.mainTarget.position.z = pos.z;
         this.mainTarget.rotation.y = pos.rotation * -1;
+
+        // Update the scale
+        this.mainTarget.scale.x *= scale;
+        this.mainTarget.scale.y *= scale;
+        this.mainTarget.scale.z *= scale;
     }
 
-    attachRenderLoop(){
+    attachRenderLoop() {
         // Utilise spin if set
         Spin.init(this.el);
     }
