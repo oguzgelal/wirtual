@@ -58,7 +58,7 @@ python -m http.server 8000
 <u>With ruby</u> : Run the below command and go to <a href="http://localhost:8080" target="_new">http://localhost:8080</a> from your browser
 
 ```
-ruby -run -e httpd demo/ -p 8080
+ruby -run -e httpd . -p 8080
 ```
 
 <u>With node</u> : First install the dependency:
