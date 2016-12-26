@@ -31,6 +31,10 @@ cp dist/wirtual.js demo/
 
 **3)** Go into the `demo` directory.
 
+```
+cd demo
+```
+
 **4)** Serve the `demo` directory. There are several ways of doing this: 
 
 <u>With php</u> : Execute below command and go to <a href="http://localhost:8080" target="_new">http://localhost:8080</a> from your browser
