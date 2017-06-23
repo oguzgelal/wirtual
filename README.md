@@ -80,6 +80,13 @@ Any other method which would serve the demo directory should work fine. And afte
 
 Coming soon...
 
+## Shoutout
+
+<img src="https://www.browserstack.com/images/layout/browserstack-logo-600x315.png" style="width: 300px;" />
+
+Special thanks to BrowserStack for supporting this opensource project and for all the contributions to the opensource society.
+
+
 ## Contact
 
 Oguz Gelal - <a href="mailto:oguz.gelal@vub.be">oguz.gelal@vub.be</a>
