@@ -73,7 +73,6 @@ Then run the below commands and go to <a href="http://localhost:8080" target="_n
 ```
 http-server -p 8000
 ```
-___
 
 Any other method which would serve the demo directory should work fine. And after doing that, html files in the demo directory could be visited.
 
