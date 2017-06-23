@@ -1,18 +1,19 @@
 <div style="text-align: center;"><img src="http://i.imgur.com/CGV3sgl.png" alt="Wirtual Logo" width="150"></div>
 
 
-#Wirtual
+# Wirtual
 
 This library was built as the project of *Next Generation User Interfaces* class at <a href="http://vub.ac.be" target="_new">VUB</a>. Documentation, contribution guide, dependancies and more information coming soon...
 
-##Demo & Documentation
+
+## Demo & Documentation
 
 Detailed documentation (and pretty much everything else about this library) could be found <a href="http://oguzgelal.com/wp-content/uploads/2016/12/wirtual.pdf" target="_new">here</a> (*see section 3.3 and 3.4*).
 
 A simple demonstration on this project could be found <a href="https://youtu.be/gSaTBP0ME_A" target="_new">here</a>.
 
 
-##How to run
+## How to run
 
 All you need to run this library is the `wirtual.js` file in the `dist` directory. Here, how to run the `demo` directory will be explained.
 
@@ -76,17 +77,19 @@ ___
 
 Any other method which would serve the demo directory should work fine. And after doing that, html files in the demo directory could be visited.
 
-##Contrinution guide
+
+## Contrinution guide
 
 Coming soon...
 
-##Shoutout
+
+## Shoutout
 
 <img src="https://www.browserstack.com/images/layout/browserstack-logo-600x315.png" style="width: 300px;" />
 
 Special thanks to BrowserStack for supporting this opensource project and for all the contributions to the opensource society.
 
 
-##Contact
+## Contact
 
 Oguz Gelal - <a href="mailto:oguz.gelal@vub.be">oguz.gelal@vub.be</a>
