@@ -8,7 +8,7 @@ This library was built as the project of *Next Generation User Interfaces* class
 
 ## Demo & Documentation
 
-Detailed documentation (and pretty much everything else about this library) could be found <a href="http://oguzgelal.com/wp-content/uploads/2017/12/wirtual.pdf" target="_new">here</a> (*see section 3.3 and 3.4*).
+Detailed documentation (and pretty much everything else about this library) could be found [here](wirtual.pdf) (*see section 3.3 and 3.4*).
 
 A simple demonstration on this project could be found <a href="https://youtu.be/gSaTBP0ME_A" target="_new">here</a>.
 
